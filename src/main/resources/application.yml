@@ -1,0 +1,48 @@
+server:
+  port: 8080
+  servlet:
+    session:
+      timeout: 30m
+    context-path: "/api"
+
+spring:
+  application:
+    name: petsitter
+  profiles:
+    active: main
+  datasource:
+#    driver-class-name: org.testcontainers.jdbc.ContainerDatabaseDriver
+#    url: jdbc:tc:postgresql:12:///petsitters?reWriteBatchedInserts=true&serverTimezone=Asia/Seoul&charEncoding=UTF-8
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:5432/cornfield?reWriteBatchedInserts=true&serverTimezone=Asia/Seoul&charEncoding=UTF-8
+    username: slave
+    password: 1234
+
+  # JPA
+  jpa:
+    database: postgresql
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    show-sql: true
+    properties:
+      hibernate:
+        hbm2ddl:
+          auto: create-drop
+        format_sql: true
+        use_sql_comments: true
+        jdbc:
+          batch_size: 1000
+          order_inserts: true
+          order_updates: true
+          batch_versioned_data: true
+
+# Swagger
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    tags-sorter: alpha
+    operations-sorter: alpha
+  default-produces-media-type: application/json
+  default-consumes-media-type: application/json
+
