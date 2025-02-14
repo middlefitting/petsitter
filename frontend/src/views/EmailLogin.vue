@@ -1,27 +1,40 @@
 <template>
   <main>
-    <h1>로그인</h1>
-    <form @submit.prevent="validateForm">
-      <!-- 이메일 입력 -->
-      <div class="input-group">
-        <label for="email">이메일</label>
-        <input type="email" id="email" v-model="email" @input="validateEmail" placeholder="example@gmail.com" />
-        <span v-if="emailError" class="error">{{ emailError }}</span>
+    <div class="center-container">
+      <div class="form-container">
+        <h1 class="text-center">로그인</h1>
+        <form @submit.prevent="handleSubmit">
+          <div class="input-group">
+            <label for="email">이메일</label>
+            <input
+              type="email"
+              id="email"
+              v-model="email"
+              required
+              placeholder="example@email.com"
+            />
+          </div>
+
+          <div class="input-group">
+            <label for="password">비밀번호</label>
+            <input
+              type="password"
+              id="password"
+              v-model="password"
+              required
+              placeholder="비밀번호를 입력하세요"
+            />
+          </div>
+
+          <button type="submit" class="btn mb-20">로그인</button>
+
+          <div class="links-container text-center">
+            <router-link to="/register" class="nav-link">회원가입</router-link>
+            <router-link to="/find-password" class="nav-link">비밀번호 찾기</router-link>
+          </div>
+        </form>
       </div>
-
-      <!-- 비밀번호 입력 -->
-      <div class="input-group">
-        <label for="password">비밀번호</label>
-        <input type="password" id="password" v-model="password" @input="validatePassword" placeholder="비밀번호 입력" />
-        <span v-if="passwordError" class="error">{{ passwordError }}</span>
-      </div>
-
-      <!-- 로그인 버튼 -->
-      <button type="submit" class="btn">로그인</button>
-
-      <!-- 비밀번호 찾기 링크 -->
-      <p class="link" @click="goToForgotPassword">비밀번호 찾기</p>
-    </form>
+    </div>
   </main>
 </template>
 
@@ -57,7 +70,7 @@ const isFormInvalid = computed(() => {
 })
 
 // 로그인 처리
-const validateForm = async () => {
+const handleSubmit = async () => {
   validateEmail()
   validatePassword()
 
@@ -95,68 +108,31 @@ const validateForm = async () => {
     }
   }
 }
-
-// 비밀번호 찾기 페이지로 이동
-const goToForgotPassword = () => {
-  router.push('/find-password')
-}
 </script>
 
-
 <style scoped>
-/* 메인 컨텐츠 중앙 정렬 */
-main {
-  flex-grow: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  min-height: 70vh;
-}
-
-h1 {
-  font-size: 32px;
+.input-group {
   margin-bottom: 20px;
 }
 
-/* 입력 그룹 스타일 */
-.input-group {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  margin-bottom: 15px;
-}
-
 label {
-  font-weight: bold;
-  margin-bottom: 5px;
+  display: block;
+  margin-bottom: 8px;
+  color: var(--black);
 }
 
-input {
-  width: 300px;
-  padding: 10px;
-  border: 1px solid black;
-  font-size: 16px;
+.links-container {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
 }
 
-.error {
-  color: red;
-  font-size: 12px;
-  margin-top: 5px;
+.nav-link {
+  color: var(--gray);
+  text-decoration: none;
 }
 
-/* 버튼 스타일 */
-button {
-  padding: 10px 15px;
-  border: 1px solid black;
-  font-size: 16px;
-  cursor: pointer;
+.nav-link:hover {
+  color: var(--black);
 }
-
-button:disabled {
-  background-color: lightgray;
-  cursor: not-allowed;
-}
-
 </style>

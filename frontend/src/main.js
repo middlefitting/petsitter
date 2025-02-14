@@ -5,6 +5,7 @@ import router from './router'; // Vue Router
 import Toast from 'vue3-toastify';
 import 'vue3-toastify/dist/index.css';
 import './assets/styles/common.css'
+import './assets/styles/variables.css'
 import axios from './plugins/axios'
 
 const app = createApp(App);

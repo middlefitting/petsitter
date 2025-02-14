@@ -6,6 +6,8 @@ import Register from '../views/Register.vue'; // 회원가입 페이지
 import EmailLogin from '../views/EmailLogin.vue'; // 로그인 페이지
 import FindPassword from '../views/FindPassword.vue'; // 비밀번호 찾기 페이지
 import UserProfile from '../views/UserProfile.vue'; // 회원정보 페이지
+import PetSitterDetail from '../views/PetSitterDetail.vue'; // 펫시터 상세 페이지
+import PaymentTest from '../views/PaymentTest.vue';
 
 const routes = [
   {
@@ -20,7 +22,7 @@ const routes = [
   },
   {
     path: '/petsitters',
-    name: '',
+    name: 'PetSitters',
     component: PetSitters
   },
   {
@@ -42,6 +44,16 @@ const routes = [
     path: '/user-profile',
     name: '',
     component: UserProfile
+  },
+  {
+    path: '/petsitters/:id',
+    name: 'PetSitterDetail',
+    component: PetSitterDetail
+  },
+  {
+    path: '/payment-test',
+    name: 'PaymentTest',
+    component: PaymentTest
   }
 ];
 

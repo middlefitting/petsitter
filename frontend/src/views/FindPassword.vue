@@ -1,139 +1,75 @@
 <template>
   <main>
-    <div v-if="isPasswordSent">
-      <!-- 성공 화면 -->
-      <h2>🐶 가입하신 이메일로 임시 비밀번호를 전송했어요.</h2>
-      <button @click="goToLogin" class="btn">로그인하러 가기</button>
-    </div>
+    <div class="center-container">
+      <div class="form-container">
+        <h1 class="text-center">비밀번호 찾기</h1>
+        <form @submit.prevent="handleSubmit">
+          <div class="input-group">
+            <label for="email">이메일</label>
+            <input
+              type="email"
+              id="email"
+              v-model="email"
+              required
+              placeholder="가입하신 이메일을 입력하세요"
+            />
+          </div>
 
-    <div v-else>
-      <!-- 비밀번호 찾기 화면 -->
-      <h1>비밀번호 찾기</h1>
-      <form @submit.prevent="sendTemporaryPassword">
-        <!-- 이메일 입력 -->
-        <div class="input-group">
-          <label for="email">이메일</label>
-          <input
-            type="email"
-            id="email"
-            v-model="email"
-            @input="validateEmail"
-            placeholder="example@gmail.com"
-          />
-          <span v-if="emailError" class="error">{{ emailError }}</span>
-        </div>
+          <button type="submit" class="btn mb-20">비밀번호 찾기</button>
 
-        <!-- 임시 비밀번호 전송 버튼 -->
-        <button type="submit" class="btn" :disabled="isFormInvalid">
-          임시비밀번호 전송
-        </button>
-
-        <!-- 로그인 페이지 이동 링크 -->
-        <div @click="goToLogin" class="link">로그인으로 돌아가기</div>
-      </form>
+          <div class="links-container text-center">
+            <router-link to="/login/email" class="nav-link">로그인으로 돌아가기</router-link>
+          </div>
+        </form>
+      </div>
     </div>
   </main>
 </template>
 
-<script>
-import { toast } from "vue3-toastify";
+<script setup>
+import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+import { toast } from 'vue3-toastify'
+import axios from '@/plugins/axios'
 
-export default {
-  data() {
-    return {
-      email: '',
-      emailError: '',
-      isPasswordSent: false // ✅ 상태 추가 (임시 비밀번호 발송 여부)
-    };
-  },
-  computed: {
-    isFormInvalid() {
-      return !!this.emailError;
-    }
-  },
-  methods: {
-    validateEmail() {
-      const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      this.emailError = emailPattern.test(this.email) ? '' : '유효한 이메일 주소를 입력하세요.';
-    },
-    sendTemporaryPassword() {
-      this.validateEmail();
-      if (this.isFormInvalid) {
-        toast.error("올바른 이메일을 입력하세요!");
-        return;
-      }
+const router = useRouter()
+const email = ref('')
 
-      toast.success("임시 비밀번호를 이메일로 전송했습니다!");
+const handleSubmit = async () => {
+  try {
+    const response = await axios.post('/v1/users/find-password', {
+      email: email.value
+    })
+
+    if (response.data.status === 'SUCCESS') {
+      toast.success('이메일로 임시 비밀번호가 발송되었습니다.')
       setTimeout(() => {
-        this.isPasswordSent = true; // ✅ 성공 시 화면 변경
-      }, 1000);
-    },
-    goToLogin() {
-      this.$router.push("/login/email");
+        router.push('/login')
+      }, 2000)
+    }
+  } catch (error) {
+    console.error('비밀번호 찾기 에러:', error)
+    if (error.response?.data?.message) {
+      toast.error(error.response.data.message)
+    } else {
+      toast.error('비밀번호 찾기에 실패했습니다.')
     }
   }
-};
+}
 </script>
 
 <style scoped>
-main {
-  flex-grow: 1;
+.links-container {
   display: flex;
-  flex-direction: column;
-  align-items: center;
   justify-content: center;
-  text-align: center;
-  min-height: 70vh;
 }
 
-h1, h2 {
-  font-size: 24px;
-  margin-bottom: 20px;
+.nav-link {
+  color: var(--gray);
+  text-decoration: none;
 }
 
-form {
-  width: 100%;
-  max-width: 400px;
+.nav-link:hover {
+  color: var(--black);
 }
-
-/* 입력 그룹 스타일 */
-.input-group {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  margin-bottom: 15px;
-}
-
-label {
-  font-weight: bold;
-  margin-bottom: 5px;
-}
-
-input {
-  width: 100%;
-  padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  font-size: 16px;
-}
-
-.error {
-  color: #dc3545;
-  font-size: 12px;
-  margin-top: 5px;
-}
-
-/* 버튼 스타일 */
-.btn {
-  padding: 10px 15px;
-  border: 1px solid black;
-  font-size: 16px;
-  cursor: pointer;
-}
-
-.btn:disabled {
-  background-color: lightgray;
-  cursor: not-allowed;
-}
-
 </style>
