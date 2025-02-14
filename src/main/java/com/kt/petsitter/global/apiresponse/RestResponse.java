@@ -19,19 +19,24 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class RestResponse<T> {
-	private Status status;
+	private String status;
 	private String message;
 	private T data;
 
-	public enum Status {
-		SUCCESS,
-		ERROR,
-	}
+	private static final String SUCCESS = "SUCCESS";
+	private static final String ERROR = "ERROR";
 
-	@Builder
-	public RestResponse(T data, String message, Status status) {
+	public RestResponse(T data, String message, String status) {
 		this.data = data;
 		this.message = message;
 		this.status = status;
+	}
+
+	public static <T> RestResponse<T> success(T data, String msg) {
+		return new RestResponse<T>(data, msg, SUCCESS);
+	}
+
+	public static <T> RestResponse<T> error(T data, String msg) {
+		return new RestResponse<T>(data, msg, ERROR);
 	}
 }

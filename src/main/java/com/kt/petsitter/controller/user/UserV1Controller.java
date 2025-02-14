@@ -1,7 +1,10 @@
 package com.kt.petsitter.controller.user;
 
+import static com.kt.petsitter.global.constant.GlobalString.*;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -12,10 +15,16 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.kt.petsitter.dto.user.CreateUserDto;
+import com.kt.petsitter.dto.user.EmailLoginUserDto;
+import com.kt.petsitter.dto.user.PasswordChangeUserDto;
+import com.kt.petsitter.dto.user.UpdateUserInfoDto;
+import com.kt.petsitter.dto.user.WithdrawUserDto;
+import com.kt.petsitter.global.annotation.login.SessionLogin;
 import com.kt.petsitter.global.apiresponse.RestResponse;
-import com.kt.petsitter.repository.dto.UserDto;
 import com.kt.petsitter.service.user.UserService;
 
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 
 /**
@@ -33,48 +42,54 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping(("/v1/users"))
 @RequiredArgsConstructor
-public class UserV1Controller implements UserController {
-
-	private final String REGISTER_SUCCESS_MSG = "회원가입에 성공했습니다.";
+@Validated
+public class UserV1Controller {
 
 	private final UserService userService;
 
-	@Override
 	@PostMapping("")
-	public ResponseEntity<RestResponse<UserDto>> registerUser(@RequestBody UserDto user) {
-		UserDto userResultDto = userService.createUser(user);
+	public ResponseEntity<RestResponse<CreateUserDto>> registerUser(@RequestBody CreateUserDto userReqDto) {
 
-		return new ResponseEntity<>(new RestResponse<>(userResultDto, REGISTER_SUCCESS_MSG, RestResponse.Status.SUCCESS), HttpStatus.CREATED);
+		CreateUserDto userResDto = userService.createUser(userReqDto);
+
+		return new ResponseEntity<>(RestResponse.success(userResDto, REGISTER), HttpStatus.CREATED);
 	}
 
-	@Override
 	@PostMapping("/login/email")
-	public ResponseEntity<RestResponse<UserDto>> loginUser(@RequestBody UserDto user) {
+	public ResponseEntity<RestResponse<EmailLoginUserDto>> loginUser(@RequestBody EmailLoginUserDto loginUserDto,
+		HttpServletRequest request) {
 
-		return null;
+		EmailLoginUserDto emailLoginUserDto = userService.emailLogin(loginUserDto, request.getSession(true));
+
+		return new ResponseEntity<>(RestResponse.success(emailLoginUserDto, LOGIN), HttpStatus.OK);
 	}
 
-	@Override
 	@PutMapping("/{id}")
-	public ResponseEntity<RestResponse<Void>> updateUser(@PathVariable Long id, @RequestBody UserDto user) {
-		return null;
+	public ResponseEntity<RestResponse<UpdateUserInfoDto>> updateUser(
+		@PathVariable Long id,
+		@RequestBody UpdateUserInfoDto updateDto,
+		@SessionLogin EmailLoginUserDto login) {
+
+		UpdateUserInfoDto result = userService.updateUserInfo(id, updateDto, login);
+		return new ResponseEntity<>(RestResponse.success(result, INFO_UD), HttpStatus.OK);
 	}
 
-	@Override
 	@DeleteMapping("/{id}")
-	public ResponseEntity<RestResponse<Void>> deleteUser(@PathVariable Long id) {
-		return null;
+	public ResponseEntity<RestResponse<Void>> deleteUser(@PathVariable Long id, @SessionLogin EmailLoginUserDto login, @RequestBody WithdrawUserDto withdrawDto) {
+		userService.withdrawUser(id,  withdrawDto, login);
+		return new ResponseEntity<>(RestResponse.success(null, USER_DEL), HttpStatus.OK);
 	}
 
-	@Override
 	@GetMapping("/{id}")
 	public ResponseEntity<RestResponse<Void>> getUserById(@PathVariable Long id) {
 		return null;
 	}
 
-	@Override
 	@PatchMapping("/{id}/reset-password")
-	public ResponseEntity<RestResponse<Void>> resetPassword(@PathVariable Long id) {
-		return null;
+	public ResponseEntity<RestResponse<Void>> resetPassword(@PathVariable Long id,
+		@RequestBody PasswordChangeUserDto passwordDto, @SessionLogin EmailLoginUserDto login) {
+		userService.changePassword(id, passwordDto, login);
+
+		return new ResponseEntity<>(RestResponse.success(null, PW_CG), HttpStatus.OK);
 	}
 }

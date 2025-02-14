@@ -61,5 +61,21 @@ public class User extends BaseEntity {
 		this.phone = phone;
 		this.isBan = false;
 	}
+
+	public User resetPassword(String newPassword) {
+		this.password = newPassword;
+		return this;
+	}
+
+	public User updateInfo(String name, String phone) {
+		this.name = name;
+		this.phone = phone;
+		return this;
+	}
+
+	public User withdraw() {
+		super.isDeleted = true;
+		return this;
+	}
 }
 

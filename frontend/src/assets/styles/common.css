@@ -1,0 +1,84 @@
+/* 기본 버튼 스타일 */
+.btn {
+  width: 100%;
+  padding: 12px;
+  margin-top: 10px;
+  background-color: #000;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background-color 0.2s;
+}
+
+.btn:hover {
+  background-color: #333;
+}
+
+/* 회색 버튼 (비밀번호 변경 등 보조 기능) */
+.btn-secondary {
+  background-color: #666;
+}
+
+.btn-secondary:hover {
+  background-color: #888;
+}
+
+/* 빨간색 버튼 (회원탈퇴 등 위험 동작) */
+.btn-danger {
+  background-color: #dc3545;
+}
+
+.btn-danger:hover {
+  background-color: #c82333;
+}
+
+/* 비활성화된 버튼 */
+.btn:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+/* 입력 필드 공통 스타일 */
+.input-group {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  margin-bottom: 15px;
+  width: 100%;
+}
+
+label {
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 16px;
+  box-sizing: border-box;
+}
+
+.error {
+  color: #dc3545;
+  font-size: 12px;
+  margin-top: 5px;
+}
+
+/* 링크 스타일 */
+.link {
+  display: block;
+  margin-top: 15px;
+  font-size: 16px;
+  color: rgb(41, 41, 56);
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.link:hover {
+  color: #000;
+}

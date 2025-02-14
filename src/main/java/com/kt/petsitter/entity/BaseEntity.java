@@ -33,7 +33,7 @@ import lombok.NoArgsConstructor;
 public abstract class BaseEntity {
 
 	@Column(name = "is_deleted", nullable = false, columnDefinition="BOOLEAN")
-	private Boolean isDeleted = false;
+	protected Boolean isDeleted = false;
 
 	@CreatedDate
 	@Column(name = "created_date", nullable = false, updatable = false, columnDefinition="TIMESTAMP WITH TIME ZONE")

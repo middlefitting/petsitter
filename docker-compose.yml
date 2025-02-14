@@ -1,0 +1,16 @@
+version: '3'
+
+services:
+
+  postgres:
+    network_mode: "host"
+    image: postgres:latest
+    container_name: kt-petsitter
+    volumes:
+      - ./.postgres:/var/lib/postgresql/data
+      - ./database:/docker-entrypoint-initdb.d
+    restart: always
+    environment:
+      POSTGRES_DB: petsitter
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: 1234
