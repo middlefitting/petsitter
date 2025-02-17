@@ -62,6 +62,16 @@
             </div>
           </div>
 
+          <!-- 돌봄 가능 크기 섹션 -->
+          <div class="section">
+            <h2>돌봄 가능 크기</h2>
+            <div class="size-tags">
+              <span v-for="size in petsitter.petSizes" :key="size" class="size-tag">
+                {{ size }}
+              </span>
+            </div>
+          </div>
+
           <!-- 근무 가능 시간 섹션 -->
           <div class="section">
             <h2>근무 가능 시간</h2>
@@ -87,7 +97,7 @@
 
           <!-- 예약 버튼 -->
           <div class="section text-center">
-            <button class="btn-primary">예약하기</button>
+            <button class="btn-primary" @click="goToReservation">예약하기</button>
           </div>
         </div>
 
@@ -125,6 +135,7 @@ const petsitter = ref({
   phone: '',
   services: [],
   petTypes: [],
+  petSizes: [],
   workingHours: {
     mon: Array(24).fill(false),
     tue: Array(24).fill(false),
@@ -324,6 +335,10 @@ async function loadPetSitter() {
 onMounted(() => {
   loadPetSitter();
 });
+
+const goToReservation = () => {
+  router.push(`/petsitters/${route.params.id}/reservation`)
+}
 </script>
 
 <style scoped>
@@ -554,6 +569,21 @@ h2 {
 .my-40 {
   margin-top: 40px;
   margin-bottom: 40px;
+}
+
+.size-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.size-tag {
+  background-color: var(--bg-secondary);
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  color: var(--black);
 }
 
 @media (max-width: 768px) {

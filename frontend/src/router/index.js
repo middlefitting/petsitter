@@ -61,6 +61,12 @@ const routes = [
     name: 'CodeManage',
     component: CodeManage,
     meta: { requiresAuth: true, requiresAdmin: true }
+  },
+  {
+    path: '/petsitters/:id/reservation',
+    name: 'PetSitterReservation',
+    component: () => import('../views/PetSitterReservation.vue'),
+    meta: { requiresAuth: true }
   }
 ];
 
