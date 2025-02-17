@@ -91,7 +91,7 @@
         <!-- 반려동물 목록 -->
         <div class="pets-list mb-20">
           <div v-for="pet in pets" :key="pet.id" class="pet-card">
-            <img :src="pet.imageUrl || '/default-pet.png'" :alt="pet.name" class="pet-image">
+            <img :src="getImageUrl(pet.imageUrl)" :alt="pet.name" class="pet-image">
             <div class="pet-info">
               <h3>{{ pet.name }}</h3>
               <p class="text-gray">{{ pet.age }}살</p>
@@ -187,6 +187,24 @@
                   <option value="2">중형(20kg 이하)</option>
                   <option value="3">대형(30kg 이상)</option>
                 </select>
+              </div>
+
+              <div class="input-group">
+                <label for="petImage">사진</label>
+                <div class="image-upload">
+                  <img
+                    v-if="imagePreview"
+                    :src="imagePreview"
+                    class="preview-image"
+                    alt="미리보기"
+                  />
+                  <input
+                    type="file"
+                    id="petImage"
+                    @change="handleImageChange"
+                    accept="image/*"
+                  />
+                </div>
               </div>
 
               <div class="button-group">
@@ -530,6 +548,68 @@ const petForm = ref({
   petGroupTypeId: null
 })
 
+const imagePreview = ref(null)
+const selectedImage = ref(null)
+
+const handleImageChange = (event) => {
+  const file = event.target.files[0]
+  if (file) {
+    selectedImage.value = file
+    imagePreview.value = URL.createObjectURL(file)
+  }
+}
+
+const handlePetSubmit = async () => {
+  try {
+    const formData = new FormData()
+    const petData = {
+      name: petForm.value.name,
+      age: petForm.value.age,
+      petsize: petForm.value.petsize,
+      petGroupTypeId: petForm.value.petGroupTypeId
+    }
+
+    formData.append('data', new Blob([JSON.stringify(petData)], { type: 'application/json' }))
+    if (selectedImage.value) {
+      formData.append('image', selectedImage.value)
+    }
+
+    const url = editingPet.value
+      ? `/v1/users/${authStore.user.userId}/pets/${editingPet.value.id}`
+      : `/v1/users/${authStore.user.userId}/pets`
+
+    const method = editingPet.value ? 'put' : 'post'
+    const response = await axios[method](url, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    })
+
+    if (response.data.status === 'SUCCESS') {
+      toast.success(editingPet.value ? '반려동물 정보가 수정되었습니다.' : '반려동물이 등록되었습니다.')
+      await loadPets()
+      closeModal()
+    }
+  } catch (error) {
+    console.error('반려동물 저장 실패:', error)
+    toast.error('반려동물 정보 저장에 실패했습니다.')
+  }
+}
+
+const closeModal = () => {
+  showAddPetModal.value = false
+  editingPet.value = null
+  imagePreview.value = null
+  selectedImage.value = null
+  petForm.value = {
+    name: '',
+    age: '',
+    imageUrl: '',
+    petsize: null,
+    petGroupTypeId: null
+  }
+}
+
 // 품종 정보 로드 (공통 사용)
 const loadPetGroups = async () => {
   try {
@@ -548,6 +628,12 @@ watch(activeTab, async (newTab) => {
     await loadPetGroups() // 두 탭 모두에서 필요한 데이터
     if (newTab === 'pets') {
       await loadPets()
+    } else if (newTab === 'petsitter') {
+      await Promise.all([
+        loadAddresses(),
+        loadPetServices(),
+        loadPetSizes()
+      ])
     }
   }
 })
@@ -589,27 +675,6 @@ const handlePetGroupChange = async (event) => {
   petForm.value.petGroupTypeId = null // 품종 선택 초기화
 }
 
-// 반려동물 등록/수정
-const handlePetSubmit = async () => {
-  try {
-    const url = editingPet.value
-      ? `/v1/users/${authStore.user.userId}/pets/${editingPet.value.id}`
-      : `/v1/users/${authStore.user.userId}/pets`
-
-    const method = editingPet.value ? 'put' : 'post'
-    const response = await axios[method](url, petForm.value)
-
-    if (response.data.status === 'SUCCESS') {
-      toast.success(editingPet.value ? '반려동물 정보가 수정되었습니다.' : '반려동물이 등록되었습니다.')
-      await loadPets()
-      closeModal()
-    }
-  } catch (error) {
-    console.error('반려동물 저장 실패:', error)
-    toast.error('반려동물 정보 저장에 실패했습니다.')
-  }
-}
-
 // 반려동물 삭제
 const deletePet = async (pet) => {
   if (!confirm('정말 삭제하시겠습니까?')) return
@@ -637,19 +702,6 @@ const editPet = (pet) => {
     petGroupTypeId: pet.petGroupTypeId
   }
   showAddPetModal.value = true
-}
-
-// 모달 닫기
-const closeModal = () => {
-  showAddPetModal.value = false
-  editingPet.value = null
-  petForm.value = {
-    name: '',
-    age: '',
-    imageUrl: '',
-    petsize: null,
-    petGroupTypeId: null
-  }
 }
 
 // 전화번호 형식 자동 변환 (010-0000-0000)
@@ -808,6 +860,79 @@ async function loadPetGroupTypes() {
     petGroupTypes.value = response.data.data
   } catch (error) {
     toast.error('품종 정보를 불러오는데 실패했습니다.')
+  }
+}
+
+// 서버 기본 URL 설정
+const API_BASE_URL = 'http://localhost:8080'
+
+// 이미지 URL을 완성된 형태로 반환하는 함수
+const getImageUrl = (imageUrl) => {
+  if (!imageUrl) return '/default-pet.png'
+  return imageUrl.startsWith('http') ? imageUrl : `${API_BASE_URL}${imageUrl}`
+}
+
+// 펫시터 등록 관련 상태 (새로 추가)
+const selectedPetServices = ref([])
+const selectedPetSizes = ref([])
+const servicePrices = ref({})
+
+// 기초 데이터 로드 함수들
+const loadAddresses = async () => {
+  try {
+    const response = await axios.get('/v1/addresses')
+    if (response.data.status === 'SUCCESS') {
+      addresses.value = response.data.data
+    }
+  } catch (error) {
+    console.error('주소 목록 조회 실패:', error)
+    toast.error('주소 목록을 불러오는데 실패했습니다.')
+  }
+}
+
+const loadPetServices = async () => {
+  try {
+    const response = await axios.get('/v1/pet-services')
+    if (response.data.status === 'SUCCESS') {
+      petServices.value = response.data.data
+    }
+  } catch (error) {
+    console.error('서비스 목록 조회 실패:', error)
+    toast.error('서비스 목록을 불러오는데 실패했습니다.')
+  }
+}
+
+const loadPetSizes = async () => {
+  try {
+    const response = await axios.get('/v1/pet-sizes')
+    if (response.data.status === 'SUCCESS') {
+      petSizes.value = response.data.data
+    }
+  } catch (error) {
+    console.error('크기 목록 조회 실패:', error)
+    toast.error('크기 목록을 불러오는데 실패했습니다.')
+  }
+}
+
+// 서비스 선택 처리
+const handleServiceSelect = (serviceId) => {
+  const index = selectedPetServices.value.indexOf(serviceId)
+  if (index === -1) {
+    selectedPetServices.value.push(serviceId)
+    servicePrices.value[serviceId] = ''
+  } else {
+    selectedPetServices.value.splice(index, 1)
+    delete servicePrices.value[serviceId]
+  }
+}
+
+// 크기 선택 처리
+const handleSizeSelect = (sizeId) => {
+  const index = selectedPetSizes.value.indexOf(sizeId)
+  if (index === -1) {
+    selectedPetSizes.value.push(sizeId)
+  } else {
+    selectedPetSizes.value.splice(index, 1)
   }
 }
 </script>
@@ -1207,5 +1332,34 @@ input:focus {
   .pets-list {
     grid-template-columns: 1fr;
   }
+}
+
+.service-list, .size-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.service-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.price-input {
+  width: 150px;
+  padding: 8px;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.checkbox-label input[type="checkbox"] {
+  width: auto;
+  margin: 0;
 }
 </style>

@@ -10,6 +10,7 @@ import com.kt.petsitter.service.pet.PetService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -22,10 +23,11 @@ public class PetV1Controller {
     @PostMapping
     public ResponseEntity<RestResponse<PetResponse>> createPet(
         @PathVariable Long userId,
-        @RequestBody CreatePetRequest request,
+        @RequestPart("data") CreatePetRequest request,
+        @RequestPart(value = "image", required = false) MultipartFile image,
         @SessionLogin EmailLoginUserDto sessionUser
     ) {
-        PetResponse response = petService.createPet(userId, request, sessionUser);
+        PetResponse response = petService.createPet(userId, request, image, sessionUser);
         return ResponseEntity.ok(RestResponse.success(response, "반려동물 등록이 완료되었습니다."));
     }
 
@@ -42,10 +44,11 @@ public class PetV1Controller {
     public ResponseEntity<RestResponse<PetResponse>> updatePet(
         @PathVariable Long userId,
         @PathVariable Long petId,
-        @RequestBody UpdatePetRequest request,
+        @RequestPart("data") UpdatePetRequest request,
+        @RequestPart(value = "image", required = false) MultipartFile image,
         @SessionLogin EmailLoginUserDto sessionUser
     ) {
-        PetResponse response = petService.updatePet(userId, petId, request, sessionUser);
+        PetResponse response = petService.updatePet(userId, petId, request, image, sessionUser);
         return ResponseEntity.ok(RestResponse.success(response, "반려동물 정보가 수정되었습니다."));
     }
 

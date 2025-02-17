@@ -51,3 +51,7 @@ springdoc:
   default-produces-media-type: application/json
   default-consumes-media-type: application/json
 
+file:
+  upload:
+    path: ${user.home}/petsitter/uploads
+

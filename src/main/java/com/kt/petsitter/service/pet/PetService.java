@@ -10,10 +10,13 @@ import com.kt.petsitter.entity.User;
 import com.kt.petsitter.repository.pet.PetRepository;
 import com.kt.petsitter.repository.petgrouptype.PetGroupTypeRepository;
 import com.kt.petsitter.repository.user.UserRepository;
+import com.kt.petsitter.service.file.FileService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -24,9 +27,10 @@ public class PetService {
     private final PetRepository petRepository;
     private final UserRepository userRepository;
     private final PetGroupTypeRepository petGroupTypeRepository;
+    private final FileService fileService;
 
     @Transactional
-    public PetResponse createPet(Long userId, CreatePetRequest request, EmailLoginUserDto sessionUser) {
+    public PetResponse createPet(Long userId, CreatePetRequest request, MultipartFile image, EmailLoginUserDto sessionUser) {
         if (!userId.equals(sessionUser.getUserId())) {
             throw new IllegalArgumentException("자신의 반려동물만 등록할 수 있습니다.");
         }
@@ -37,10 +41,19 @@ public class PetService {
         PetGroupType petGroupType = petGroupTypeRepository.findById(request.getPetGroupTypeId())
             .orElseThrow(() -> new IllegalArgumentException("품종 정보를 찾을 수 없습니다."));
 
+        String imageUrl = null;
+        if (image != null && !image.isEmpty()) {
+            try {
+                imageUrl = fileService.saveFile(image);
+            } catch (IOException e) {
+                throw new RuntimeException("이미지 저장에 실패했습니다.", e);
+            }
+        }
+
         Pet pet = Pet.builder()
             .name(request.getName())
             .age(request.getAge())
-            .imageUrl(request.getImageUrl())
+            .imageUrl(imageUrl)
             .petsize(request.getPetsize())
             .user(user)
             .petGroupType(petGroupType)
@@ -61,7 +74,7 @@ public class PetService {
     }
 
     @Transactional
-    public PetResponse updatePet(Long userId, Long petId, UpdatePetRequest request, EmailLoginUserDto sessionUser) {
+    public PetResponse updatePet(Long userId, Long petId, UpdatePetRequest request, MultipartFile image, EmailLoginUserDto sessionUser) {
         if (!userId.equals(sessionUser.getUserId())) {
             throw new IllegalArgumentException("자신의 반려동물만 수정할 수 있습니다.");
         }
@@ -76,9 +89,16 @@ public class PetService {
         PetGroupType petGroupType = petGroupTypeRepository.findById(request.getPetGroupTypeId())
             .orElseThrow(() -> new IllegalArgumentException("품종 정보를 찾을 수 없습니다."));
 
-        pet.update(request.getName(), request.getAge(), request.getImageUrl(),
-                  request.getPetsize(), petGroupType);
+        String imageUrl = pet.getImageUrl();
+        if (image != null && !image.isEmpty()) {
+            try {
+                imageUrl = fileService.saveFile(image);
+            } catch (IOException e) {
+                throw new RuntimeException("이미지 저장에 실패했습니다.", e);
+            }
+        }
 
+        pet.update(request.getName(), request.getAge(), imageUrl, request.getPetsize(), petGroupType);
         return PetResponse.from(pet);
     }
 
