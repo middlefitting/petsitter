@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @Service
@@ -32,17 +33,22 @@ public class ReservationService {
         Pet pet = petRepository.findById(request.getPetId())
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 반려동물입니다."));
 
-        PetService service = petServiceRepository.findById(request.getPetId())
-            .orElseThrow(() -> new IllegalArgumentException("지원하지 않는 서비스입니다."));
+        PetService service = petServiceRepository.findById(request.getServiceId())
+                .orElseThrow(() -> new IllegalArgumentException("지원하지 않는 서비스입니다."));
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        LocalDateTime beginTime = LocalDateTime.parse(request.getStartTime(), formatter);
+        LocalDateTime endTime = LocalDateTime.parse(request.getEndTime(), formatter);
 
         PetSitterReserve reserve = PetSitterReserve.builder()
                 .petSitter(petSitter)
                 .pet(pet)
                 .petService(service)
-                .beginTime(LocalDateTime.parse(request.getStartTime()))
-                .endTime(LocalDateTime.parse(request.getEndTime()))
+                .beginTime(beginTime)
+                .endTime(endTime)
                 .price(request.getTotalPrice())
-                .isaccept(false) // 초기 상태
+                .isaccept(false)
+                .ispaied(false)
                 .build();
 
         PetSitterReserve savedReserve = reservationRepository.save(reserve);

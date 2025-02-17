@@ -8,8 +8,7 @@ import lombok.NoArgsConstructor;
 public class CreateReservationRequest {
     private Long petsitterId;
     private Long petId;
-    private String serviceId;
-    private String date;
+    private Long serviceId;
     private String startTime;
     private String endTime;
     private Long totalPrice;

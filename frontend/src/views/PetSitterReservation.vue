@@ -305,14 +305,47 @@ const getUnavailableReason = (pet) => {
   }
 }
 
+// 날짜와 시간을 yyyy-MM-dd HH:mm:ss 형식으로 변환
+const formatDateTime = (date, time) => {
+  // 날짜와 시간을 직접 문자열로 조합
+  const [year, month, day] = date.split('-')
+  const [hours, minutes] = time.split(':')
+  return `${year}-${month}-${day} ${hours}:${minutes}:00`
+}
+
 // 예약 제출
 const submitReservation = async () => {
   try {
+    // 선택된 시간 범위에서 시작/종료 시간 추출
+    const selected = Array.from(selectedTimes.value).sort((a, b) => a - b)
+    const startHour = selected[0]
+    const endHour = selected[selected.length - 1] + 1
+
+    // 날짜와 시간을 yyyy-MM-dd HH:mm:ss 형식으로 변환
+    const startTime = formatDateTime(
+      reservation.value.date,
+      `${startHour.toString().padStart(2, '0')}:00`
+    )
+    const endTime = formatDateTime(
+      reservation.value.date,
+      `${endHour.toString().padStart(2, '0')}:00`
+    )
+
+    // 선택된 서비스 정보 가져오기
+    const selectedService = petsitter.value.services.find(
+      service => service.type === reservation.value.serviceId
+    )
+
     const reservationData = {
-      petsitterId: route.params.id,
-      ...reservation.value,
-      totalPrice: hourlyPrice.value * totalHours.value
+      petsitterId: parseInt(route.params.id),
+      petId: parseInt(reservation.value.petId),
+      serviceId: parseInt(selectedService.serviceId), // serviceId를 숫자로 변환
+      startTime,
+      endTime,
+      totalPrice: totalPrice.value
     }
+
+    console.log('Sending reservation data:', reservationData) // 디버깅용
 
     const response = await axios.post('/v1/reservations', reservationData)
     if (response.data.status === 'SUCCESS') {
@@ -320,6 +353,7 @@ const submitReservation = async () => {
       router.push('/reservations')
     }
   } catch (error) {
+    console.error('예약 실패:', error)
     toast.error('예약에 실패했습니다.')
   }
 }

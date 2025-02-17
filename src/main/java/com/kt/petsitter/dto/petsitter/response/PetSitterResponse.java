@@ -25,6 +25,7 @@ public class PetSitterResponse {
     @Getter
     @Builder
     public static class ServiceInfo {
+        private Long serviceId;
         private String type;
         private Long price;
     }
@@ -65,6 +66,7 @@ public class PetSitterResponse {
             .phone(petSitter.getMobile())
             .services(petSitter.getPetSitterPetServices().stream()
                 .map(service -> ServiceInfo.builder()
+                    .serviceId(service.getId())
                     .type(service.getPetService().getServicename())
                     .price(service.getHprice())
                     .build())
