@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Builder;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,13 +12,14 @@ import java.util.List;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Table(name = "order")
+@Table(name = "orders")
 public class Order extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String ordertype;
+    private String merchantUid;
+    private Long totalPrice;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
@@ -36,4 +38,12 @@ public class Order extends BaseEntity {
 
     @OneToMany(mappedBy = "order")
     private List<PetSitterOrder> petSitterOrders = new ArrayList<>();
+
+    @Builder
+    public Order(String merchantUid, Long totalPrice, User user, PayType payType) {
+        this.merchantUid = merchantUid;
+        this.totalPrice = totalPrice;
+        this.user = user;
+        this.payType = payType;
+    }
 }

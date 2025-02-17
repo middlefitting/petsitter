@@ -3,9 +3,12 @@ package com.kt.petsitter.service.reservation;
 import com.kt.petsitter.dto.reservation.request.CreateReservationRequest;
 import com.kt.petsitter.dto.reservation.response.ReservationResponse;
 import com.kt.petsitter.entity.*;
+import com.kt.petsitter.repository.order.OrderRepository;
+import com.kt.petsitter.repository.paytype.PayTypeRepository;
 import com.kt.petsitter.repository.pet.PetRepository;
 import com.kt.petsitter.repository.petservice.PetServiceRepository;
 import com.kt.petsitter.repository.petsitter.PetSitterRepository;
+import com.kt.petsitter.repository.petsitterorder.PetSitterOrderRepository;
 import com.kt.petsitter.repository.reservation.ReservationRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -24,6 +27,9 @@ public class ReservationService {
     private final PetSitterRepository petSitterRepository;
     private final PetRepository petRepository;
     private final PetServiceRepository petServiceRepository;
+    private final PayTypeRepository payTypeRepository;
+    private final OrderRepository orderRepository;
+    private final PetSitterOrderRepository petSitterOrderRepository;
 
     @Transactional
     public ReservationResponse createReservation(CreateReservationRequest request) {
@@ -86,5 +92,43 @@ public class ReservationService {
 
         reservationRepository.delete(reserve); // 예약 거절 시 삭제
         return ReservationResponse.from(reserve);
+    }
+
+    @Transactional
+    public void updatePaymentInfo(Long reservationId, String merchantUid, String payMethod) {
+        PetSitterReserve reserve = reservationRepository.findById(reservationId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 예약입니다."));
+
+        if (!reserve.getIsaccept()) {
+            throw new IllegalStateException("승인되지 않은 예약은 결제할 수 없습니다.");
+        }
+
+        if (reserve.getIspaied()) {
+            throw new IllegalStateException("이미 결제가 완료된 예약입니다.");
+        }
+
+        // PayType 조회
+        PayType payType = payTypeRepository.findByType(payMethod)
+                .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 결제 유형입니다."));
+
+        // Order 생성
+        Order order = Order.builder()
+                .merchantUid(merchantUid)
+                .totalPrice(reserve.getPrice())
+                .user(reserve.getUser())
+                .payType(payType)
+                .build();
+        orderRepository.save(order);
+
+        // PetSitterOrder 생성
+        PetSitterOrder petSitterOrder = PetSitterOrder.builder()
+                .price(reserve.getPrice())
+                .order(order)
+                .reserve(reserve)
+                .build();
+        petSitterOrderRepository.save(petSitterOrder);
+
+        reserve.updatePaymentStatus(true);
+        reservationRepository.save(reserve);
     }
 }

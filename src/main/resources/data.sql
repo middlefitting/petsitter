@@ -64,9 +64,9 @@ VALUES (1, '홍길동', 1, 1, '010-0000-0000', false, CURRENT_TIMESTAMP, CURRENT
 
 -- PetSitterPetService 데이터 추가
 INSERT INTO petsitter_petservice (id, petsitter_id, petservice_id, hprice, created_date, modified_date, is_deleted)
-VALUES (1, 1, 1, 10000, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, false);
+VALUES (1, 1, 1, 50, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, false);
 INSERT INTO petsitter_petservice (id, petsitter_id, petservice_id, hprice, created_date, modified_date, is_deleted)
-VALUES (2, 1, 2, 20000, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, false);
+VALUES (2, 1, 2, 100, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, false);
 
 -- PetSitterPetGroupType 데이터 추가
 INSERT INTO petsitter_petgrouptype (id, petsitter_id, petgrouptype_id, created_date, modified_date, is_deleted)
@@ -106,4 +106,10 @@ VALUES (1, '냥이', 1, 1, 1, '20', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, false)
 
 -- PetSitterReserve 데이터 추가
 INSERT INTO petsitter_reserve (id, user_id, petsitter_id, pet_id, petservice_id, begin_time, end_time, price, isaccept, ispaied, created_date, modified_date, is_deleted)
-VALUES (1, 1, 1, 1, 1, '2025-02-19 06:00:00', '2025-02-19 08:00:00', 20000, false, false, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, false);
+VALUES (1, 1, 1, 1, 1, '2025-02-19 06:00:00', '2025-02-19 08:00:00', 100, false, false, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, false);
+
+-- PayType 데이터 추가
+INSERT INTO paytype (id, name, type, created_date, modified_date, is_deleted)
+VALUES (1, '간편결제', 'EASY', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, false);
+INSERT INTO paytype (id, name, type, created_date, modified_date, is_deleted)
+VALUES (2, '일반결제', 'card', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, false);

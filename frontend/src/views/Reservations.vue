@@ -50,7 +50,7 @@
               <template v-if="activeTab === 'customer'">
                 <button
                   v-if="!reservation.status"
-                  class="btn btn-primary mr-10"
+                  class="btn btn-success"
                   @click="acceptReservation(reservation.id)"
                 >
                   예약 승인
@@ -71,6 +71,16 @@
                 >
                   예약 취소
                 </button>
+                <button
+                  v-if="reservation.status && !reservation.isPaid"
+                  class="btn btn-primary"
+                  @click="onPayment(reservation)"
+                >
+                  결제하기
+                </button>
+                <span v-if="reservation.isPaid" class="payment-status">
+                  결제완료
+                </span>
               </template>
             </div>
           </div>
@@ -163,6 +173,47 @@ const cancelReservation = async (reservationId) => {
     toast.error('예약 취소에 실패했습니다.')
   }
 }
+
+// 결제 처리
+const onPayment = (reservation) => {
+  const { IMP } = window;
+  IMP.init('imp71318136'); // 가맹점 식별코드
+
+  const data = {
+    pg: 'uplus', // PG사 (간편결제 또는 일반결제 구분)
+    pay_method: 'card', // 결제수단
+    merchant_uid: `mid_${new Date().getTime()}`, // 주문번호
+    amount: reservation.totalPrice, // 결제금액
+    name: '펫시터 예약 결제', // 주문명
+    buyer_name: authStore.user.name, // 구매자 이름
+    buyer_tel: authStore.user.phone, // 구매자 전화번호
+    buyer_email: authStore.user.email, // 구매자 이메일
+    buyer_addr: '주소', // 구매자 주소
+    buyer_postcode: '우편번호' // 구매자 우편번호
+  };
+
+  IMP.request_pay(data, (response) => {
+    const { success, merchant_uid, pg_provider, error_msg } = response;
+    if (success) {
+      alert('결제 성공');
+      // 결제 성공 시 서버에 결제 완료 상태 업데이트
+      axios.post(`/v1/reservations/${reservation.id}/pay`, {
+        merchantUid: merchant_uid,
+        payMethod: pg_provider // 결제 유형을 pg_provider로 설정
+      })
+      .then(() => {
+        toast.success('결제가 완료되었습니다.');
+        loadReservations(); // 예약 목록 다시 불러오기
+      })
+      .catch((error) => {
+        console.error('결제 상태 업데이트 실패:', error);
+        toast.error('결제 상태 업데이트에 실패했습니다.');
+      });
+    } else {
+      alert(`결제 실패: ${error_msg}`);
+    }
+  });
+};
 
 // 날짜 포맷팅
 const formatDateTime = (dateTimeStr) => {
@@ -268,20 +319,60 @@ onMounted(() => {
 
 .reservation-actions {
   display: flex;
-  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.btn {
+  display: inline-block;
+  padding: 8px 16px;
+  border-radius: 4px;
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+  color: var(--white);
+}
+
+.btn-success {
+  background-color: var(--success);
+}
+
+.btn-success:hover {
+  background-color: #218838;
 }
 
 .btn-danger {
   background-color: var(--error);
-  color: var(--white);
-  border: none;
-  padding: 8px 16px;
-  border-radius: 4px;
-  cursor: pointer;
 }
 
 .btn-danger:hover {
-  background-color: #dc3545;
+  background-color: #c82333;
+}
+
+.btn-primary {
+  background-color: var(--primary);
+}
+
+.btn-primary:hover {
+  background-color: #0056b3;
+}
+
+.btn {
+  background-color: #f0f0f0; /* 연한 회색 */
+  color: #333; /* 검은색 텍스트 */
+}
+
+.mr-10, .ml-10 {
+  margin: 0;
+}
+
+.payment-status {
+  display: inline-block;
+  color: var(--success);
+  font-weight: bold;
+  padding: 8px 16px;
+  background-color: #d4edda;
+  border-radius: 4px;
 }
 
 @media (max-width: 768px) {

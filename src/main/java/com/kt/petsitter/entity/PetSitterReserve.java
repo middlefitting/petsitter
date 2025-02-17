@@ -71,4 +71,8 @@ public class PetSitterReserve extends BaseEntity {
     public void updateStatus(Boolean status) {
         this.isaccept = status;
     }
+
+    public void updatePaymentStatus(Boolean status) {
+        this.ispaied = status;
+    }
 }
