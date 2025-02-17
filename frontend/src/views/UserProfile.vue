@@ -242,7 +242,7 @@ const servicePrice = ref('')
 
 const petsitterForm = ref({
   addressId: '',
-  userId: 1,
+  userId: authStore.user.userId,
   petGroupTypes: [],
   petSizes: [],
   petServices: [],
@@ -527,37 +527,47 @@ const handleWithdrawal = async () => {
   }
 }
 
-const registerPetSitter = async () => {
+// 시간 선택을 CateTime enum 형식으로 변환
+function convertToCateTime(hour) {
+  const nextHour = (hour + 1) % 24
+  return `H${hour.toString().padStart(2, '0')}${nextHour.toString().padStart(2, '0')}`
+}
+
+// 선택된 시간을 PetCareTime 형식으로 변환
+function getSelectedCareTimes() {
+  const careTimes = []
+
+  Object.entries(petsitterForm.value.workingHours).forEach(([day, hours]) => {
+    hours.forEach((isSelected, hour) => {
+      if (isSelected) {
+        careTimes.push({
+          weekday: day.toUpperCase(),
+          cateTime: convertToCateTime(hour)
+        })
+      }
+    })
+  })
+
+  return careTimes
+}
+
+// 펫시터 등록 시 데이터 전송
+async function registerPetSitter() {
   try {
-    if (!validateForm()) return
+    const petSitterData = {
+      ...petsitterForm.value,
+      careTimes: getSelectedCareTimes()
+    }
 
-    const response = await axios.post('/api/v1/petsitters', petsitterForm.value)
-
-    if (response.data.status === 'SUCCESS') {
-      toast.success('펫시터 정보가 등록되었습니다.')
-      router.push('/petsitters')
+    const response = await axios.post('/v1/petsitters', petSitterData)
+    if (response.data.success) {
+      toast.success('펫시터 등록이 완료되었습니다.')
+      router.push('/profile')
     }
   } catch (error) {
     console.error('펫시터 등록 에러:', error)
-    toast.error(error.response?.data?.message || '등록에 실패했습니다.')
+    toast.error('펫시터 등록에 실패했습니다.')
   }
-}
-
-// 폼 유효성 검사
-function validateForm() {
-  if (!petsitterForm.value.petGroupTypes.length) {
-    toast.error('돌봄 품종을 선택해주세요.')
-    return false
-  }
-  if (!petsitterForm.value.petSizes.length) {
-    toast.error('돌봄 가능한 크기를 선택해주세요.')
-    return false
-  }
-  if (!petsitterForm.value.petServices.length) {
-    toast.error('제공할 서비스를 선택해주세요.')
-    return false
-  }
-  return true
 }
 
 // 품종 타입 로드

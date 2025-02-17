@@ -29,8 +29,8 @@ public class PetSitter extends BaseEntity {
     @JoinColumn(name = "address_id")
     private Address address;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", unique=true, nullable=false)
     private User user;
 
     @OneToMany(mappedBy = "petSitter", cascade = CascadeType.ALL, orphanRemoval = true)
