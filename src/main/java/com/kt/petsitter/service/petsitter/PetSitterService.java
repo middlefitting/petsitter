@@ -5,6 +5,13 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.kt.petsitter.dto.petsitter.request.CreatePetSitterRequest;
 import com.kt.petsitter.dto.petsitter.response.PetSitterResponse;
+import com.kt.petsitter.entity.Address;
+import com.kt.petsitter.entity.PetCareTime;
+import com.kt.petsitter.entity.PetGroupType;
+import com.kt.petsitter.entity.PetService;
+import com.kt.petsitter.entity.PetSitter;
+import com.kt.petsitter.entity.PetSitterPetGroupType;
+import com.kt.petsitter.entity.PetSitterPetService;
 import com.kt.petsitter.entity.PetSitterPetSize;
 import com.kt.petsitter.entity.PetSize;
 import com.kt.petsitter.entity.User;

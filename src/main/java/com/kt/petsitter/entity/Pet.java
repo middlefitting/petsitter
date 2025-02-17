@@ -1,4 +1,4 @@
-package com.example.entity;
+package com.kt.petsitter.entity;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -18,8 +18,9 @@ public class Pet extends BaseEntity {
     private Long id;
 
     private String name;
-    private Long age;
-    private String pictureUrl;
+    private String age;
+    private String imageUrl;
+    private Long petsize;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")

@@ -18,25 +18,23 @@ public class PetSitterReserve extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private Boolean isaccept;
-    private LocalDateTime starttime;
-    private LocalDateTime endtime;
-    private Long price;
-    private Long petsize;
-    private String review;
+    private LocalDateTime beginTime;
+    private LocalDateTime endTime;
     private String petname;
     private String petage;
     private String petimageurl;
-    private String ispaied;
-    private Long id2;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "petsitter_id")
-    private PetSitter petSitter;
+    private Boolean isaccept;
+    private Long price;
+    private String review;
+    private Boolean ispaied;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "petsitter_id")
+    private PetSitter petSitter;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "pet_id")

@@ -1,7 +1,8 @@
-package com.example.entity;
+package com.kt.petsitter.entity;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -32,15 +33,27 @@ public class PetSitter extends BaseEntity {
     @JoinColumn(name = "user_id")
     private User user;
 
-    @OneToMany(mappedBy = "petSitter")
+    @OneToMany(mappedBy = "petSitter", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PetCareTime> petCareTimes = new ArrayList<>();
 
-    @OneToMany(mappedBy = "petSitter")
+    @OneToMany(mappedBy = "petSitter", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PetSitterPetService> petSitterPetServices = new ArrayList<>();
 
-    @OneToMany(mappedBy = "petSitter")
+    @OneToMany(mappedBy = "petSitter", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PetSitterPetGroupType> petSitterPetGroupTypes = new ArrayList<>();
+
+    @OneToMany(mappedBy = "petSitter", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<PetSitterPetSize> petSitterPetSizes = new ArrayList<>();
 
     @OneToMany(mappedBy = "petSitter")
     private List<PetSitterReserve> reserves = new ArrayList<>();
+
+    @Builder
+    public PetSitter(String name, String mobile, Address address, User user, Boolean isaccept) {
+        this.name = name;
+        this.mobile = mobile;
+        this.address = address;
+        this.user = user;
+        this.isaccept = isaccept;
+    }
 }

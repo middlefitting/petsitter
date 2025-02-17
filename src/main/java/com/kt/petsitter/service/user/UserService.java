@@ -10,10 +10,10 @@ import com.kt.petsitter.dto.user.PasswordChangeUserDto;
 import com.kt.petsitter.entity.User;
 import com.kt.petsitter.global.exception.ForbiddenException;
 import com.kt.petsitter.global.exception.IllegalException;
-import com.kt.petsitter.repository.UserRepository;
 import com.kt.petsitter.dto.user.CreateUserDto;
 import com.kt.petsitter.dto.user.UpdateUserInfoDto;
 import com.kt.petsitter.dto.user.WithdrawUserDto;
+import com.kt.petsitter.repository.user.UserRepository;
 
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;

@@ -1,4 +1,4 @@
-package com.example.entity;
+package com.kt.petsitter.entity;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -18,6 +18,10 @@ public class PetSitterOrder extends BaseEntity {
     private Long userId;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id2")
+    @JoinColumn(name = "order_id")
     private Order order;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "reserve_id")
+    private PetSitterReserve reserve;
 }

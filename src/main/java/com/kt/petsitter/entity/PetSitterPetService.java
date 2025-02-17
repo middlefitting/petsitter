@@ -1,7 +1,8 @@
-package com.example.entity;
+package com.kt.petsitter.entity;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -23,4 +24,11 @@ public class PetSitterPetService extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "petsitter_id")
     private PetSitter petSitter;
+
+    @Builder
+    public PetSitterPetService(PetService petService, PetSitter petSitter, Long hprice) {
+        this.petService = petService;
+        this.petSitter = petSitter;
+        this.hprice = hprice;
+    }
 }
