@@ -41,9 +41,9 @@ VALUES (4, '러시안블루', 'RUSSIAN_BLUE', 2, CURRENT_TIMESTAMP, CURRENT_TIME
 INSERT INTO petsize (id, size_info, created_date, modified_date, is_deleted)
 VALUES (1, '소형(10kg 이하)', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, false);
 INSERT INTO petsize (id, size_info, created_date, modified_date, is_deleted)
-VALUES (2, '중형(20kg 이하)', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, false);
+VALUES (2, '중형(10kg~25kg 이하)', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, false);
 INSERT INTO petsize (id, size_info, created_date, modified_date, is_deleted)
-VALUES (3, '대형(30kg 이상)', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, false);
+VALUES (3, '대형(25kg 초과)', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, false);
 
 -- PetService 데이터 추가
 INSERT INTO petservice (petservice_id, servicename, created_date, modified_date, is_deleted)
@@ -100,8 +100,8 @@ INSERT INTO petcaretime (id, petsitter_id, weekday, cate_time, created_date, mod
 VALUES (8, 1, 'WED', 9, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, false);
 
 -- Pet 데이터 추가
-INSERT INTO pet (id, name, user_id, petgrouptype_id, petsize, age, created_date, modified_date, is_deleted)
-VALUES (1, '냥이', 1, 1, 1, '20', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, false);
+INSERT INTO pet (id, name, user_id, petgrouptype_id, petsize, age, created_date, modified_date, is_deleted, image_url)
+VALUES (1, '솜털이', 1, 1, 1, '3', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, false, '/api/uploads/dog1.jpeg');
 
 -- PetSitterReserve 데이터 추가
 INSERT INTO petsitter_reserve (id, user_id, petsitter_id, pet_id, petservice_id, begin_time, end_time, price, isaccept, ispaied, created_date, modified_date, is_deleted)

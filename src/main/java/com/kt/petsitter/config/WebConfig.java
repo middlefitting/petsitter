@@ -47,15 +47,14 @@ public class WebConfig implements WebMvcConfigurer {
 			.maxAge(3600);
 	}
 
-	@Override
-	public void addResourceHandlers(ResourceHandlerRegistry registry) {
-		// 파일 시스템의 절대 경로로 설정
-		String resourceLocation = "file:///" + new File(uploadPath).getAbsolutePath() + "/";
-		registry.addResourceHandler("/api/images/**")
-			.addResourceLocations(resourceLocation)
-			.setCachePeriod(3600)
-			.resourceChain(true)
-			.addResolver(new PathResourceResolver());
-	}
+	// @Override
+	// public void addResourceHandlers(ResourceHandlerRegistry registry) {
+	// 	String resourceLocation = "file:" + uploadPath + "/";
+	// 	registry.addResourceHandler("/uploads/**") // 기본 URL에서 제공
+	// 		.addResourceLocations(resourceLocation)
+	// 		.setCachePeriod(3600)
+	// 		.resourceChain(true)
+	// 		.addResolver(new PathResourceResolver());
+	// }
 
 }
