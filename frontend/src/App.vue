@@ -22,7 +22,7 @@ export default {
     <nav>
       <div class="nav-left">
         <router-link to="/" class="logo">🐶</router-link>
-        <router-link to="/shop" active-class="active">쇼핑몰</router-link>
+        <!-- <router-link to="/shop" active-class="active">쇼핑몰</router-link> -->
         <router-link to="/petsitters" active-class="active">펫시터</router-link>
       </div>
       <div class="nav-right">

@@ -3,6 +3,7 @@ package com.kt.petsitter.controller.reservation;
 import com.kt.petsitter.dto.reservation.request.CreateReservationRequest;
 import com.kt.petsitter.dto.reservation.request.PaymentInfoRequest;
 import com.kt.petsitter.dto.reservation.response.ReservationResponse;
+import com.kt.petsitter.dto.reservation.response.OrderDetailResponse;
 import com.kt.petsitter.global.apiresponse.RestResponse;
 import com.kt.petsitter.service.reservation.ReservationService;
 import lombok.RequiredArgsConstructor;
@@ -59,5 +60,11 @@ public class ReservationV1Controller {
             @RequestBody PaymentInfoRequest paymentInfoRequest) {
         reservationService.updatePaymentInfo(reservationId, paymentInfoRequest.getMerchantUid(), paymentInfoRequest.getPayMethod());
         return ResponseEntity.ok(RestResponse.success(null, "결제 정보가 업데이트되었습니다."));
+    }
+
+    @GetMapping("/{reservationId}/order-details")
+    public ResponseEntity<RestResponse<OrderDetailResponse>> getOrderDetails(@PathVariable Long reservationId) {
+        OrderDetailResponse orderDetails = reservationService.getOrderDetails(reservationId);
+        return ResponseEntity.ok(RestResponse.success(orderDetails, "결제 내역 조회 성공"));
     }
 }

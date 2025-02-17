@@ -29,7 +29,7 @@
           <p>예약 내역이 없습니다.</p>
         </div>
 
-        <div v-else class="reservation-list">
+        <transition-group name="fade" tag="div" class="reservation-list">
           <div v-for="reservation in displayedReservations" :key="reservation.id" class="reservation-card">
             <div class="reservation-header">
               <h3>{{ reservation.petsitterName }}</h3>
@@ -78,12 +78,24 @@
                 >
                   결제하기
                 </button>
-                <span v-if="reservation.isPaid" class="payment-status">
+                <span v-if="reservation.isPaid" class="payment-status" @click="showOrderDetails(reservation.id)">
                   결제완료
                 </span>
               </template>
             </div>
           </div>
+        </transition-group>
+      </div>
+
+      <div v-if="orderDetails" class="modal">
+        <div class="modal-content">
+          <span class="close" @click="orderDetails = null">&times;</span>
+          <h2>결제 내역</h2>
+          <p><strong>주문번호:</strong> {{ orderDetails.merchantUid }}</p>
+          <p><strong>총 금액:</strong> {{ orderDetails.totalPrice.toLocaleString() }}원</p>
+          <p><strong>결제 수단:</strong> {{ orderDetails.payMethod }}</p>
+          <p><strong>반려동물:</strong> {{ orderDetails.petName }}</p>
+          <p><strong>서비스:</strong> {{ orderDetails.serviceName }}</p>
         </div>
       </div>
     </div>
@@ -101,6 +113,7 @@ const isLoading = ref(false)
 const myReservations = ref([])
 const customerReservations = ref([])
 const activeTab = ref('my')
+const orderDetails = ref(null)
 
 // 현재 탭에 따른 예약 목록 표시
 const displayedReservations = computed(() => {
@@ -193,13 +206,13 @@ const onPayment = (reservation) => {
   };
 
   IMP.request_pay(data, (response) => {
-    const { success, merchant_uid, pg_provider, error_msg } = response;
+    const { success, merchant_uid, pay_method, error_msg } = response;
     if (success) {
       alert('결제 성공');
       // 결제 성공 시 서버에 결제 완료 상태 업데이트
       axios.post(`/v1/reservations/${reservation.id}/pay`, {
         merchantUid: merchant_uid,
-        payMethod: pg_provider // 결제 유형을 pg_provider로 설정
+        payMethod: pay_method // 결제 유형을 pg_provider로 설정
       })
       .then(() => {
         toast.success('결제가 완료되었습니다.');
@@ -246,6 +259,16 @@ const getStatusText = (status) => {
 watch(activeTab, () => {
   loadReservations()
 })
+
+const showOrderDetails = async (reservationId) => {
+  try {
+    const response = await axios.get(`/v1/reservations/${reservationId}/order-details`)
+    orderDetails.value = response.data.data
+  } catch (error) {
+    console.error('결제 내역 조회 실패:', error)
+    toast.error('결제 내역을 불러오는데 실패했습니다.')
+  }
+}
 
 onMounted(() => {
   loadReservations()
@@ -373,6 +396,7 @@ onMounted(() => {
   padding: 8px 16px;
   background-color: #d4edda;
   border-radius: 4px;
+  cursor: pointer;
 }
 
 @media (max-width: 768px) {
@@ -406,5 +430,47 @@ onMounted(() => {
 .tab-button.active {
   color: var(--black);
   border-bottom-color: var(--black);
+}
+
+.fade-enter-active, .fade-leave-active {
+  transition: opacity 0.5s;
+}
+.fade-enter, .fade-leave-to /* .fade-leave-active in <2.1.8 */ {
+  opacity: 0;
+}
+
+.modal {
+  display: block;
+  position: fixed;
+  z-index: 1;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgb(0,0,0);
+  background-color: rgba(0,0,0,0.4);
+}
+
+.modal-content {
+  background-color: #fefefe;
+  margin: 15% auto;
+  padding: 20px;
+  border: 1px solid #888;
+  width: 80%;
+}
+
+.close {
+  color: #aaa;
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+}
+
+.close:hover,
+.close:focus {
+  color: black;
+  text-decoration: none;
+  cursor: pointer;
 }
 </style>

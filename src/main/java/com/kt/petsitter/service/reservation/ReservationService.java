@@ -2,6 +2,7 @@ package com.kt.petsitter.service.reservation;
 
 import com.kt.petsitter.dto.reservation.request.CreateReservationRequest;
 import com.kt.petsitter.dto.reservation.response.ReservationResponse;
+import com.kt.petsitter.dto.reservation.response.OrderDetailResponse;
 import com.kt.petsitter.entity.*;
 import com.kt.petsitter.repository.order.OrderRepository;
 import com.kt.petsitter.repository.paytype.PayTypeRepository;
@@ -130,5 +131,22 @@ public class ReservationService {
 
         reserve.updatePaymentStatus(true);
         reservationRepository.save(reserve);
+    }
+
+    @Transactional(readOnly = true)
+    public OrderDetailResponse getOrderDetails(Long reservationId) {
+        PetSitterOrder petSitterOrder = petSitterOrderRepository.findByReserveId(reservationId)
+                .orElseThrow(() -> new IllegalArgumentException("결제 내역을 찾을 수 없습니다."));
+
+        Order order = petSitterOrder.getOrder();
+        PetSitterReserve reserve = petSitterOrder.getReserve();
+
+        return OrderDetailResponse.builder()
+                .merchantUid(order.getMerchantUid())
+                .totalPrice(order.getTotalPrice())
+                .payMethod(order.getPayType().getName())
+                .petName(reserve.getPet().getName())
+                .serviceName(reserve.getPetService().getServicename())
+                .build();
     }
 }
