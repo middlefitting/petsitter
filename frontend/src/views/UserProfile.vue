@@ -133,7 +133,7 @@
                   :value="size.id"
                   v-model="petsitterForm.petSizes"
                 >
-                {{ size.size_info }}
+                {{ size.sizeInfo }}
               </label>
             </div>
           </div>
@@ -342,7 +342,7 @@ const addService = () => {
   if (!selectedService.value || !servicePrice.value) return
 
   const newService = {
-    petServiceId: selectedService.value.petservice_id,
+    petServiceId: selectedService.value.petServiceId,
     serviceName: selectedService.value.servicename,
     price: parseInt(servicePrice.value)
   }
@@ -564,7 +564,7 @@ function validateForm() {
 async function loadPetGroupTypes() {
   if (!selectedPetGroup.value) return
   try {
-    const response = await axios.get(`/v1/pet-group-types?groupId=${selectedPetGroup.value.id}`)
+    const response = await axios.get(`/v1/pet-groups/${selectedPetGroup.value.id}/pet-group-types`)
     petGroupTypes.value = response.data.data
   } catch (error) {
     toast.error('품종 정보를 불러오는데 실패했습니다.')

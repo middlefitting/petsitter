@@ -15,7 +15,7 @@ import java.util.List;
 public class PetGroupTypeV1Controller {
     private final PetGroupTypeService petGroupTypeService;
 
-    @GetMapping("/{groupId}/breeds")
+    @GetMapping("/{groupId}/pet-group-types")
     public ResponseEntity<RestResponse<List<PetGroupTypeResponse>>> getPetGroupTypesByGroupId(
         @PathVariable Long groupId
     ) {
