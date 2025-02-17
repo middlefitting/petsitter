@@ -28,9 +28,12 @@ import com.kt.petsitter.repository.user.UserRepository;
 
 import lombok.RequiredArgsConstructor;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Service
+@Transactional(readOnly = true)
 @RequiredArgsConstructor
-@Transactional
 public class PetSitterService {
     private final PetSitterRepository petSitterRepository;
     private final UserRepository userRepository;
@@ -43,6 +46,7 @@ public class PetSitterService {
     private final PetSitterPetServiceRepository petSitterPetServiceRepository;
     private final PetCareTimeRepository petCareTimeRepository;
 
+    @Transactional
     public PetSitterResponse createPetSitter(CreatePetSitterRequest request) {
         User user = userRepository.findById(request.getUserId())
             .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
@@ -51,8 +55,8 @@ public class PetSitterService {
             .orElseThrow(() -> new IllegalArgumentException("주소를 찾을 수 없습니다."));
 
         PetSitter petSitter = PetSitter.builder()
-            .name(request.getName())
-            .mobile(request.getMobile())
+            .name(user.getName())
+            .mobile(user.getPhone())
             .address(address)
             .user(user)
             .isaccept(false)
@@ -111,6 +115,18 @@ public class PetSitterService {
             petCareTimeRepository.save(petCareTime);
         }
 
+        return PetSitterResponse.from(petSitter);
+    }
+
+    public List<PetSitterResponse> getAllPetSitters() {
+        return petSitterRepository.findAll().stream()
+            .map(PetSitterResponse::from)
+            .collect(Collectors.toList());
+    }
+
+    public PetSitterResponse getPetSitter(Long id) {
+        PetSitter petSitter = petSitterRepository.findById(id)
+            .orElseThrow(() -> new IllegalArgumentException("해당 펫시터를 찾을 수 없습니다."));
         return PetSitterResponse.from(petSitter);
     }
 }

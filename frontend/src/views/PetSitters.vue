@@ -46,8 +46,13 @@
         </div>
       </div>
 
+      <!-- 로딩 상태 표시 -->
+      <div v-if="isLoading" class="text-center">
+        <p>펫시터 목록을 불러오는 중...</p>
+      </div>
+
       <!-- 펫시터 목록 -->
-      <div class="petsitter-list">
+      <div v-else class="petsitter-list">
         <div v-for="sitter in displayedPetsitters" :key="sitter.id" class="petsitter-card card">
           <div class="sitter-info">
             <h2>{{ sitter.name }}</h2>
@@ -57,6 +62,16 @@
                 {{ service.type }} {{ service.price.toLocaleString() }}원/시간
               </span>
             </div>
+            <!-- <div class="tags mt-8">
+              <span v-for="type in sitter.petTypes" :key="type" class="tag">
+                {{ type }}
+              </span>
+            </div> -->
+            <!-- <div class="tags mt-8">
+              <span v-for="size in sitter.petSizes" :key="size" class="tag">
+                {{ size }}
+              </span>
+            </div> -->
           </div>
           <div class="sitter-actions">
             <button class="btn" @click="viewDetails(sitter.id)">상세 보기</button>
@@ -73,10 +88,14 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import axios from '@/plugins/axios'
+import { toast } from 'vue3-toastify'
 
 const router = useRouter()
+const petsitters = ref([])
+const isLoading = ref(false)
 
 const filters = ref({
   location: '',
@@ -85,81 +104,53 @@ const filters = ref({
   sort: 'price'
 })
 
+// 펫시터 목록 로드
+async function loadPetSitters() {
+  try {
+    isLoading.value = true
+    const response = await axios.get('/v1/petsitters')
+    petsitters.value = response.data.data
+  } catch (error) {
+    console.error('펫시터 목록 로드 에러:', error)
+    toast.error('펫시터 목록을 불러오는데 실패했습니다.')
+  } finally {
+    isLoading.value = false
+  }
+}
+
+// 필터링된 펫시터 목록
+const filteredPetsitters = computed(() => {
+  return petsitters.value.filter(sitter => {
+    // 지역 필터
+    if (filters.value.location && sitter.location !== filters.value.location) return false
+
+    // 품종 필터
+    if (filters.value.petType && !sitter.petTypes.includes(filters.value.petType)) return false
+
+    // 서비스 필터
+    if (filters.value.service && !sitter.services.some(s => s.type === filters.value.service)) return false
+
+    return true
+  }).sort((a, b) => {
+    // 정렬
+    if (filters.value.sort === 'price') {
+      return a.services[0]?.price - b.services[0]?.price
+    }
+    return 0 // 기본 정렬
+  })
+})
+
 const ITEMS_PER_PAGE = 5
 const currentPage = ref(1)
 
-// 임시 데이터 10개로 확장
-const petsitters = ref([
-  {
-    id: 1,
-    name: '홍길동',
-    location: '서울 강남구',
-    services: [{ type: '산책', price: 15000 }, { type: '방문', price: 30000 }]
-  },
-  {
-    id: 2,
-    name: '김철수',
-    location: '서울 서초구',
-    services: [{ type: '산책', price: 20000 }, { type: '훈련', price: 40000 }]
-  },
-  {
-    id: 3,
-    name: '이영희',
-    location: '경기 성남시',
-    services: [{ type: '돌봄', price: 25000 }]
-  },
-  {
-    id: 4,
-    name: '박지민',
-    location: '서울 송파구',
-    services: [{ type: '산책', price: 18000 }]
-  },
-  {
-    id: 5,
-    name: '최유진',
-    location: '경기 분당구',
-    services: [{ type: '훈련', price: 35000 }]
-  },
-  {
-    id: 6,
-    name: '정민수',
-    location: '서울 마포구',
-    services: [{ type: '산책', price: 16000 }, { type: '돌봄', price: 28000 }]
-  },
-  {
-    id: 7,
-    name: '강다희',
-    location: '경기 일산동구',
-    services: [{ type: '돌봄', price: 22000 }]
-  },
-  {
-    id: 8,
-    name: '윤서준',
-    location: '서울 용산구',
-    services: [{ type: '훈련', price: 45000 }]
-  },
-  {
-    id: 9,
-    name: '임하늘',
-    location: '경기 수원시',
-    services: [{ type: '산책', price: 17000 }]
-  },
-  {
-    id: 10,
-    name: '송민아',
-    location: '서울 중구',
-    services: [{ type: '돌봄', price: 23000 }, { type: '훈련', price: 38000 }]
-  }
-])
-
 // 현재 페이지에 표시할 펫시터 목록
 const displayedPetsitters = computed(() => {
-  return petsitters.value.slice(0, currentPage.value * ITEMS_PER_PAGE)
+  return filteredPetsitters.value.slice(0, currentPage.value * ITEMS_PER_PAGE)
 })
 
 // 더 보여줄 항목이 있는지 확인
 const hasMorePetsitters = computed(() => {
-  return currentPage.value * ITEMS_PER_PAGE < petsitters.value.length
+  return currentPage.value * ITEMS_PER_PAGE < filteredPetsitters.value.length
 })
 
 // 더보기 버튼 클릭 핸들러
@@ -170,6 +161,11 @@ const loadMore = () => {
 const viewDetails = (sitterId) => {
   router.push(`/petsitters/${sitterId}`)
 }
+
+// 컴포넌트 마운트 시 데이터 로드
+onMounted(() => {
+  loadPetSitters()
+})
 </script>
 
 <style scoped>
@@ -323,5 +319,9 @@ const viewDetails = (sitterId) => {
     width: 100%;
     max-width: 400px;
   }
+}
+
+.mt-8 {
+  margin-top: 8px;
 }
 </style>

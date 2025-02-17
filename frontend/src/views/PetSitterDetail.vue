@@ -1,101 +1,108 @@
 <template>
   <main>
     <div class="container my-40">
-      <!-- 탭 메뉴 -->
-      <div class="tabs mb-20">
-        <button
-          class="tab-btn"
-          :class="{ active: activeTab === 'info' }"
-          @click="activeTab = 'info'"
-        >
-          펫시터 정보
-        </button>
-        <button
-          class="tab-btn"
-          :class="{ active: activeTab === 'reviews' }"
-          @click="activeTab = 'reviews'"
-        >
-          리뷰 {{ reviews.length }}개
-        </button>
+      <!-- 로딩 상태 표시 -->
+      <div v-if="isLoading" class="text-center">
+        <p>펫시터 정보를 불러오는 중...</p>
       </div>
 
-      <!-- 펫시터 정보 탭 -->
-      <div v-if="activeTab === 'info'" class="detail-card card">
-        <!-- 기본 정보 섹션 -->
-        <div class="section">
-          <h1>{{ petsitter.name }}</h1>
-          <p class="location">{{ petsitter.location }}</p>
-          <p class="contact">
-            {{ formatPhoneNumber(petsitter.phone) }}
-          </p>
+      <div v-else>
+        <!-- 탭 메뉴 -->
+        <div class="tabs mb-20">
+          <button
+            class="tab-btn"
+            :class="{ active: activeTab === 'info' }"
+            @click="activeTab = 'info'"
+          >
+            펫시터 정보
+          </button>
+          <button
+            class="tab-btn"
+            :class="{ active: activeTab === 'reviews' }"
+            @click="activeTab = 'reviews'"
+          >
+            리뷰 {{ reviews.length }}개
+          </button>
         </div>
 
-        <!-- 서비스 섹션 -->
-        <div class="section">
-          <h2>제공 서비스</h2>
-          <div class="service-tags">
-            <div v-for="service in petsitter.services" :key="service.type" class="service-tag">
-              <span class="service-type">{{ service.type }}</span>
-              <span class="service-price">{{ service.price.toLocaleString() }}원/시간</span>
-            </div>
+        <!-- 펫시터 정보 탭 -->
+        <div v-if="activeTab === 'info'" class="detail-card card">
+          <!-- 기본 정보 섹션 -->
+          <div class="section">
+            <h1>{{ petsitter.name }}</h1>
+            <p class="location">{{ petsitter.location }}</p>
+            <p class="contact">
+              {{ formatPhoneNumber(petsitter.phone) }}
+            </p>
           </div>
-        </div>
 
-        <!-- 돌봄 가능 품종 섹션 -->
-        <div class="section">
-          <h2>돌봄 가능 품종</h2>
-          <div class="pet-type-groups">
-            <div v-for="(breeds, mainType) in groupedPetTypes" :key="mainType" class="pet-type-group">
-              <div class="main-type">{{ mainType }}</div>
-              <div class="breed-tags">
-                <span v-for="breed in breeds" :key="breed" class="breed-tag">
-                  {{ breed }}
-                </span>
+          <!-- 서비스 섹션 -->
+          <div class="section">
+            <h2>제공 서비스</h2>
+            <div class="service-tags">
+              <div v-for="service in petsitter.services" :key="service.type" class="service-tag">
+                <span class="service-type">{{ service.type }}</span>
+                <span class="service-price">{{ service.price.toLocaleString() }}원/시간</span>
               </div>
             </div>
           </div>
-        </div>
 
-        <!-- 근무 가능 시간 섹션 -->
-        <div class="section">
-          <h2>근무 가능 시간</h2>
-          <div class="schedule-container">
-            <div
-              v-for="day in weekdays"
-              :key="day.value"
-              class="schedule-day"
-              :class="{ 'disabled': !hasWorkingHours(day.value) }"
-            >
-              <div class="day-label">{{ day.label }}</div>
-              <div v-if="hasWorkingHours(day.value)" class="time-ranges">
-                <div v-for="(range, index) in getTimeRanges(day.value)" :key="index" class="time-range">
-                  {{ range.start }} ~ {{ range.end }}
+          <!-- 돌봄 가능 품종 섹션 -->
+          <div class="section">
+            <h2>돌봄 가능 품종</h2>
+            <div class="pet-type-groups">
+              <div v-for="(breeds, mainType) in groupedPetTypes" :key="mainType" class="pet-type-group">
+                <div class="main-type">{{ mainType }}</div>
+                <div class="breed-tags">
+                  <span v-for="breed in breeds" :key="breed" class="breed-tag">
+                    {{ breed }}
+                  </span>
                 </div>
               </div>
-              <div v-else class="time-ranges">
-                근무 불가
+            </div>
+          </div>
+
+          <!-- 근무 가능 시간 섹션 -->
+          <div class="section">
+            <h2>근무 가능 시간</h2>
+            <div class="schedule-container">
+              <div
+                v-for="day in weekdays"
+                :key="day.value"
+                class="schedule-day"
+                :class="{ 'disabled': !hasWorkingHours(day.value) }"
+              >
+                <div class="day-label">{{ day.label }}</div>
+                <div v-if="hasWorkingHours(day.value)" class="time-ranges">
+                  <div v-for="(range, index) in getTimeRanges(day.value)" :key="index" class="time-range">
+                    {{ range.start }} ~ {{ range.end }}
+                  </div>
+                </div>
+                <div v-else class="time-ranges">
+                  근무 불가
+                </div>
               </div>
             </div>
           </div>
+
+          <!-- 예약 버튼 -->
+          <div class="section text-center">
+            <button class="btn-primary">예약하기</button>
+          </div>
         </div>
 
-        <!-- 예약 버튼 -->
-        <div class="section text-center">
-          <button class="btn-primary">예약하기</button>
-        </div>
-      </div>
-
-      <!-- 리뷰 탭 -->
-      <div v-else class="detail-card card">
-        <div class="reviews-container">
-          <div v-for="review in reviews" :key="review.id" class="review-card">
-            <div class="review-header">
-              <span class="reviewer-name">{{ review.userName }}</span>
-              <span class="review-date">{{ formatDate(review.date) }}</span>
-            </div>
-            <p class="review-content">{{ review.content }}</p>
-            <div class="review-service">
-              <span class="service-badge">{{ review.service }}</span>
+        <!-- 리뷰 탭 -->
+        <div v-else class="detail-card card">
+          <div class="reviews-container">
+            <div v-for="review in reviews" :key="review.id" class="review-card">
+              <div class="review-header">
+                <span class="reviewer-name">{{ review.userName }}</span>
+                <span class="review-date">{{ formatDate(review.date) }}</span>
+              </div>
+              <p class="review-content">{{ review.content }}</p>
+              <div class="review-service">
+                <span class="service-badge">{{ review.service }}</span>
+              </div>
             </div>
           </div>
         </div>
@@ -106,43 +113,30 @@
 
 <script setup>
 import { ref, onMounted, computed } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import axios from '@/plugins/axios'
+import { toast } from 'vue3-toastify'
 
 const route = useRoute()
+const router = useRouter()
 const petsitter = ref({
-  name: '홍길동',
-  location: '서울 강남구',
-  phone: '01012345678',
-  services: [
-    { type: '산책', price: 15000 },
-    { type: '방문', price: 30000 }
-  ],
-  petTypes: [
-    { mainType: '강아지', breed: '푸들' },
-    { mainType: '강아지', breed: '말티즈' },
-    { mainType: '강아지', breed: '치와와' },
-    { mainType: '고양이', breed: '페르시안' },
-    { mainType: '고양이', breed: '러시안블루' }
-  ],
+  name: '',
+  location: '',
+  phone: '',
+  services: [],
+  petTypes: [],
   workingHours: {
-    mon: Array(24).fill(false).map((_, i) =>
-      (i >= 9 && i < 12) || (i >= 15 && i < 18)
-    ), // 9시~12시, 15시~18시
-    tue: Array(24).fill(false).map((_, i) =>
-      (i >= 13 && i < 16) || (i >= 19 && i < 22)
-    ), // 13시~16시, 19시~22시
-    wed: Array(24).fill(false).map((_, i) =>
-      (i >= 9 && i < 12) || (i >= 14 && i < 17) || (i >= 19 && i < 22)
-    ), // 9시~12시, 14시~17시, 19시~22시
-    thu: Array(24).fill(false).map((_, i) => i >= 9 && i < 18), // 9시~18시
-    fri: Array(24).fill(false).map((_, i) =>
-      (i >= 10 && i < 13) || (i >= 16 && i < 19)
-    ), // 10시~13시, 16시~19시
+    mon: Array(24).fill(false),
+    tue: Array(24).fill(false),
+    wed: Array(24).fill(false),
+    thu: Array(24).fill(false),
+    fri: Array(24).fill(false),
     sat: Array(24).fill(false),
     sun: Array(24).fill(false)
   }
 })
+const isLoading = ref(false)
+const activeTab = ref('info')
 
 const weekdays = [
   { value: 'mon', label: '월' },
@@ -161,58 +155,69 @@ const timeSlots = [
   '18:00', '19:00', '20:00', '21:00', '22:00', '23:00'
 ]
 
-const activeTab = ref('info')  // 탭 상태 추가
+// 품종 정보를 메인 타입별로 그룹화
+const groupedPetTypes = computed(() => {
+  const groups = {};
+  if (petsitter.value.petTypes) {
+    petsitter.value.petTypes.forEach(type => {
+      if (!groups[type.groupName]) {
+        groups[type.groupName] = [];
+      }
+      groups[type.groupName].push(type.typeName);
+    });
+  }
+  return groups;
+})
+
+// 전화번호 포맷팅
+const formatPhoneNumber = (phone) => {
+  if (!phone) return '';
+  return phone.replace(/(\d{3})(\d{4})(\d{4})/, '$1-$2-$3');
+}
 
 // 해당 요일에 근무 가능 시간이 있는지 확인
 const hasWorkingHours = (day) => {
-  return petsitter.value.workingHours[day].some(time => time)
+  return petsitter.value.workingHours &&
+         petsitter.value.workingHours[day] &&
+         petsitter.value.workingHours[day].some(time => time);
 }
 
 // 연속된 시간대를 범위로 변환
 const getTimeRanges = (day) => {
-  const ranges = []
-  let start = null
+  if (!petsitter.value.workingHours || !petsitter.value.workingHours[day]) {
+    return [];
+  }
+
+  const ranges = [];
+  let start = null;
+  const timeSlots = [
+    '00:00', '01:00', '02:00', '03:00', '04:00', '05:00',
+    '06:00', '07:00', '08:00', '09:00', '10:00', '11:00',
+    '12:00', '13:00', '14:00', '15:00', '16:00', '17:00',
+    '18:00', '19:00', '20:00', '21:00', '22:00', '23:00'
+  ];
 
   petsitter.value.workingHours[day].forEach((isAvailable, index) => {
     if (isAvailable && start === null) {
-      start = timeSlots[index]
+      start = timeSlots[index];
     } else if (!isAvailable && start !== null) {
       ranges.push({
         start,
-        end: timeSlots[index - 1]
-      })
-      start = null
+        end: timeSlots[index]
+      });
+      start = null;
     }
-  })
+  });
 
   // 마지막 범위 처리
   if (start !== null) {
     ranges.push({
       start,
-      end: timeSlots[timeSlots.length - 1]
-    })
+      end: timeSlots[23]
+    });
   }
 
-  return ranges
-}
-
-// 품종 데이터를 그룹화하는 computed 속성 추가
-const groupedPetTypes = computed(() => {
-  const groups = {}
-  petsitter.value.petTypes.forEach(type => {
-    if (!groups[type.mainType]) {
-      groups[type.mainType] = []
-    }
-    if (type.breed) {
-      groups[type.mainType].push(type.breed)
-    }
-  })
-  return groups
-})
-
-const formatPhoneNumber = (phone) => {
-  if (!phone) return ''
-  return phone.replace(/(\d{3})(\d{4})(\d{4})/, '$1-$2-$3')
+  return ranges;
 }
 
 const reviews = ref([
@@ -293,14 +298,32 @@ const formatDate = (dateString) => {
   return `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, '0')}.${String(date.getDate()).padStart(2, '0')}`
 }
 
-onMounted(async () => {
+// 펫시터 정보 로드
+async function loadPetSitter() {
   try {
-    const response = await axios.get(`/v1/petsitters/${route.params.id}`)
-    petsitter.value = response.data
+    isLoading.value = true;
+    const response = await axios.get(`/v1/petsitters/${route.params.id}`);
+    if (response.data.status === 'SUCCESS') {
+      petsitter.value = {
+        ...petsitter.value,
+        ...response.data.data
+      };
+    } else {
+      throw new Error('Failed to load petsitter data');
+    }
   } catch (error) {
-    console.error('펫시터 정보 로딩 실패:', error)
+    console.error('펫시터 정보 로드 에러:', error);
+    toast.error('펫시터 정보를 불러오는데 실패했습니다.');
+    router.push('/petsitters');
+  } finally {
+    isLoading.value = false;
   }
-})
+}
+
+// 컴포넌트 마운트 시 데이터 로드
+onMounted(() => {
+  loadPetSitter();
+});
 </script>
 
 <style scoped>
