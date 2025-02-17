@@ -11,6 +11,10 @@ import com.kt.petsitter.entity.User;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 
 /**
  * CreateUserDto.
@@ -28,16 +32,20 @@ import lombok.NoArgsConstructor;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class CreateUserDto {
 
-	@JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
-	private String name;
-
-	@JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
-	private String password;
-
-	@JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+	@Email(message = "유효한 이메일 주소를 입력하세요.")
+	@NotBlank(message = "이메일은 필수 입력 항목입니다.")
 	private String email;
 
-	@JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+	@Size(min = 8, message = "비밀번호는 8자 이상이어야 합니다.")
+	@NotBlank(message = "비밀번호는 필수 입력 항목입니다.")
+	private String password;
+
+	@Size(min = 2, message = "이름은 2자 이상이어야 합니다.")
+	@NotBlank(message = "이름은 필수 입력 항목입니다.")
+	private String name;
+
+	@Pattern(regexp = "^\\d{3}-\\d{3,4}-\\d{4}$", message = "유효한 전화번호 형식을 입력하세요.")
+	@NotBlank(message = "전화번호는 필수 입력 항목입니다.")
 	private String phone;
 
 	@JsonProperty(access = JsonProperty.Access.READ_ONLY)

@@ -26,6 +26,7 @@ import com.kt.petsitter.service.user.UserService;
 
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import jakarta.validation.Valid;
 
 /**
  * UserV1Controller.
@@ -48,7 +49,7 @@ public class UserV1Controller {
 	private final UserService userService;
 
 	@PostMapping("")
-	public ResponseEntity<RestResponse<CreateUserDto>> registerUser(@RequestBody CreateUserDto userReqDto) {
+	public ResponseEntity<RestResponse<CreateUserDto>> registerUser(@Valid @RequestBody CreateUserDto userReqDto) {
 
 		CreateUserDto userResDto = userService.createUser(userReqDto);
 

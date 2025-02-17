@@ -15,7 +15,7 @@
           :class="['tab-button', { active: activeTab === 'pets' }]"
           @click="activeTab = 'pets'"
         >
-          반려동물
+          내 반려동물 관리
         </button>
         <button
           :class="['tab-button', { active: activeTab === 'petsitter' }]"
@@ -112,7 +112,7 @@
 
         <!-- 반려동물 추가 버튼 -->
         <button class="btn" @click="showAddPetModal = true">
-          반려동물 등록하기
+          반려동물 등록
         </button>
 
         <!-- 반려동물 등록/수정 모달 -->

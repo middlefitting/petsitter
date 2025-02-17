@@ -1,7 +1,17 @@
 -- 기존 데이터 삽입 전에 시퀀스 초기화
-ALTER SEQUENCE petgroup_id_seq RESTART WITH 100;
-ALTER SEQUENCE petgrouptype_id_seq RESTART WITH 100;
+ALTER SEQUENCE petgroup_id_seq RESTART WITH 1000;
+ALTER SEQUENCE petgrouptype_id_seq RESTART WITH 1000;
+ALTER SEQUENCE petsize_id_seq RESTART WITH 1000;
+ALTER SEQUENCE petservice_petservice_id_seq RESTART WITH 1000;
+ALTER SEQUENCE user_seq RESTART WITH 1000;
+ALTER SEQUENCE petsitter_id_seq RESTART WITH 1000;
+ALTER SEQUENCE petsitter_petservice_id_seq RESTART WITH 1000;
+ALTER SEQUENCE petcaretime_id_seq RESTART WITH 1000;
+ALTER SEQUENCE pet_id_seq RESTART WITH 1000;
+ALTER SEQUENCE petsitter_reserve_id_seq RESTART WITH 1000;
+ALTER SEQUENCE paytype_id_seq RESTART WITH 1000;
 
+-- Address 데이터 추가
 INSERT INTO address (id, city, created_date, modified_date, is_deleted)
 VALUES (1, '서울', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, false);
 INSERT INTO address (id, city, created_date, modified_date, is_deleted)
@@ -42,17 +52,6 @@ INSERT INTO petservice (petservice_id, servicename, created_date, modified_date,
 VALUES (2, '훈련', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, false);
 INSERT INTO petservice (petservice_id, servicename, created_date, modified_date, is_deleted)
 VALUES (3, '산책', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, false);
-
-
--- 기존 데이터 삽입 전에 시퀀스 초기화
-ALTER SEQUENCE user_seq RESTART WITH 100;
-ALTER SEQUENCE petgroup_id_seq RESTART WITH 100;
-ALTER SEQUENCE petgrouptype_id_seq RESTART WITH 100;
-ALTER SEQUENCE petservice_petservice_id_seq RESTART WITH 100;
-ALTER SEQUENCE petsize_id_seq RESTART WITH 100;
-ALTER SEQUENCE petsitter_id_seq RESTART WITH 100;
-ALTER SEQUENCE petsitter_petservice_id_seq RESTART WITH 100;
-ALTER SEQUENCE petcaretime_id_seq RESTART WITH 100;
 
 -- User 데이터 추가
 INSERT INTO users (id, email, name, password, phone, isban, created_date, modified_date, is_deleted)
