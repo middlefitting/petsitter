@@ -1,4 +1,4 @@
-package com.example.entity.id;
+package com.kt.petsitter.entity.id;
 
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;

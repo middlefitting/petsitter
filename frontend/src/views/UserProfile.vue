@@ -11,6 +11,13 @@
         </button>
         <button
           class="tab-btn"
+          :class="{ active: activeTab === 'pets' }"
+          @click="activeTab = 'pets'"
+        >
+          반려동물 관리
+        </button>
+        <button
+          class="tab-btn"
           :class="{ active: activeTab === 'petsitter' }"
           @click="activeTab = 'petsitter'"
         >
@@ -75,6 +82,124 @@
             <button type="button" @click="confirmWithdrawal" class="btn btn-danger">회원탈퇴</button>
           </div>
         </form>
+      </div>
+
+      <!-- 반려동물 관리 탭 -->
+      <div v-else-if="activeTab === 'pets'" class="form-container">
+        <h2 class="text-center mb-20">내 반려동물</h2>
+
+        <!-- 반려동물 목록 -->
+        <div class="pets-list mb-20">
+          <div v-for="pet in pets" :key="pet.id" class="pet-card">
+            <img :src="pet.imageUrl || '/default-pet.png'" :alt="pet.name" class="pet-image">
+            <div class="pet-info">
+              <h3>{{ pet.name }}</h3>
+              <p class="text-gray">{{ pet.age }}살</p>
+              <p class="text-gray">{{ pet.petGroupName }} - {{ pet.petTypeName }}</p>
+            </div>
+            <div class="pet-actions">
+              <button class="btn-icon" @click="editPet(pet)">수정</button>
+              <button class="btn-icon delete" @click="deletePet(pet)">삭제</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 반려동물 추가 버튼 -->
+        <button class="btn" @click="showAddPetModal = true">
+          반려동물 등록하기
+        </button>
+
+        <!-- 반려동물 등록/수정 모달 -->
+        <Modal v-if="showAddPetModal" @close="closeModal">
+          <template #header>
+            <h3>{{ editingPet ? '반려동물 정보 수정' : '새 반려동물 등록' }}</h3>
+          </template>
+          <template #body>
+            <form @submit.prevent="handlePetSubmit" class="pet-form">
+              <div class="input-group">
+                <label for="petName">이름</label>
+                <input
+                  id="petName"
+                  v-model="petForm.name"
+                  type="text"
+                  required
+                  placeholder="반려동물 이름"
+                />
+              </div>
+
+              <div class="input-group">
+                <label for="petAge">나이</label>
+                <input
+                  id="petAge"
+                  v-model="petForm.age"
+                  type="text"
+                  required
+                  placeholder="반려동물 나이"
+                />
+              </div>
+
+              <div class="input-group">
+                <label for="petGroup">동물 종류</label>
+                <select
+                  id="petGroup"
+                  v-model="selectedPetGroup"
+                  @change="handlePetGroupChange"
+                  required
+                >
+                  <option value="">동물 종류를 선택하세요</option>
+                  <option
+                    v-for="group in petGroups"
+                    :key="group.id"
+                    :value="group.id"
+                  >
+                    {{ group.groupname }}
+                  </option>
+                </select>
+              </div>
+
+              <div class="input-group" v-if="selectedPetGroup">
+                <label for="petGroupType">품종</label>
+                <select
+                  id="petGroupType"
+                  v-model="petForm.petGroupTypeId"
+                  required
+                >
+                  <option value="">품종을 선택하세요</option>
+                  <option
+                    v-for="type in petTypes"
+                    :key="type.id"
+                    :value="type.id"
+                  >
+                    {{ type.typename }}
+                  </option>
+                </select>
+              </div>
+
+              <div class="input-group">
+                <label for="petSize">크기</label>
+                <select
+                  id="petSize"
+                  v-model="petForm.petsize"
+                  required
+                >
+                  <option value="">크기를 선택하세요</option>
+                  <option value="1">소형(10kg 이하)</option>
+                  <option value="2">중형(20kg 이하)</option>
+                  <option value="3">대형(30kg 이상)</option>
+                </select>
+              </div>
+
+              <div class="button-group">
+                <button type="submit" class="btn">
+                  {{ editingPet ? '수정하기' : '등록하기' }}
+                </button>
+                <button type="button" class="btn btn-secondary" @click="closeModal">
+                  취소
+                </button>
+              </div>
+            </form>
+          </template>
+        </Modal>
       </div>
 
       <!-- 펫시터 등록 탭 -->
@@ -218,6 +343,7 @@ import { useAuthStore } from '@/store/auth'
 import { toast } from 'vue3-toastify'
 import { useRouter } from 'vue-router'
 import axios from '@/plugins/axios'
+import Modal from '@/components/Modal.vue'
 
 const authStore = useAuthStore()
 const router = useRouter()
@@ -382,45 +508,149 @@ watch(() => authStore.user, (newValue) => {
   console.log('authStore.user 변경:', newValue)
 }, { immediate: true })
 
-// 데이터 상태 추가
+// 공통 데이터 상태
 const addresses = ref([])
 const petGroups = ref([])
 const petGroupTypes = ref([])
 const petSizes = ref([])
 const petServices = ref([])
 
-// 초기 데이터 로드
-onMounted(async () => {
+// 반려동물 관련 상태
+const pets = ref([])
+const showAddPetModal = ref(false)
+const editingPet = ref(null)
+const petTypes = ref([])
+
+// 반려동물 폼 데이터
+const petForm = ref({
+  name: '',
+  age: '',
+  imageUrl: '',
+  petsize: null,
+  petGroupTypeId: null
+})
+
+// 품종 정보 로드 (공통 사용)
+const loadPetGroups = async () => {
   try {
-    // 기존 유저 정보 로드
-    if (authStore.user) {
-      userInfo.value = {
-        name: authStore.user.name || '',
-        phone: authStore.user.phone || ''
-      }
+    const response = await axios.get('/v1/pet-groups')
+    if (response.data.status === 'SUCCESS') {
+      petGroups.value = response.data.data
     }
-
-    // 펫시터 등록에 필요한 데이터 로드
-    const [addressesRes, groupsRes, sizesRes, servicesRes] = await Promise.all([
-      axios.get('/v1/addresses'),
-      axios.get('/v1/pet-groups'),
-      axios.get('/v1/pet-sizes'),
-      axios.get('/v1/pet-services')
-    ])
-
-    addresses.value = addressesRes.data.data
-    petGroups.value = groupsRes.data.data
-    petSizes.value = sizesRes.data.data
-    petServices.value = servicesRes.data.data
-
-    // 데이터 확인을 위한 로그
-    console.log('Loaded pet groups:', petGroups.value)
-    console.log('Loaded pet sizes:', petSizes.value)
   } catch (error) {
-    console.error('데이터 로드 에러:', error)
-    toast.error('필요한 데이터를 불러오는데 실패했습니다.')
+    console.error('품종 그룹 조회 실패:', error)
+  }
+}
+
+// 탭 변경 시 데이터 로드
+watch(activeTab, async (newTab) => {
+  if (newTab === 'pets' || newTab === 'petsitter') {
+    await loadPetGroups() // 두 탭 모두에서 필요한 데이터
+    if (newTab === 'pets') {
+      await loadPets()
+    }
   }
 })
+
+// 반려동물 목록 조회
+const loadPets = async () => {
+  try {
+    const response = await axios.get(`/v1/users/${authStore.user.userId}/pets`)
+    if (response.data.status === 'SUCCESS') {
+      pets.value = response.data.data
+    }
+  } catch (error) {
+    console.error('반려동물 목록 조회 실패:', error)
+    toast.error('반려동물 목록을 불러오는데 실패했습니다.')
+  }
+}
+
+// 선택된 그룹의 세부 품종 로드
+const loadPetTypes = async (groupId) => {
+  try {
+    const response = await axios.get(`/v1/pet-groups/${groupId}/pet-group-types`)
+    // const response = await axios.get(`/v1/pet-group-types?groupId=${groupId}`)
+    if (response.data.status === 'SUCCESS') {
+      petTypes.value = response.data.data
+    }
+  } catch (error) {
+    console.error('품종 타입 조회 실패:', error)
+  }
+}
+
+// petGroup 선택 시 petTypes 로드
+const handlePetGroupChange = async (event) => {
+  const selectedGroupId = event.target.value
+  if (selectedGroupId) {
+    await loadPetTypes(selectedGroupId)
+  } else {
+    petTypes.value = []
+  }
+  petForm.value.petGroupTypeId = null // 품종 선택 초기화
+}
+
+// 반려동물 등록/수정
+const handlePetSubmit = async () => {
+  try {
+    const url = editingPet.value
+      ? `/v1/users/${authStore.user.userId}/pets/${editingPet.value.id}`
+      : `/v1/users/${authStore.user.userId}/pets`
+
+    const method = editingPet.value ? 'put' : 'post'
+    const response = await axios[method](url, petForm.value)
+
+    if (response.data.status === 'SUCCESS') {
+      toast.success(editingPet.value ? '반려동물 정보가 수정되었습니다.' : '반려동물이 등록되었습니다.')
+      await loadPets()
+      closeModal()
+    }
+  } catch (error) {
+    console.error('반려동물 저장 실패:', error)
+    toast.error('반려동물 정보 저장에 실패했습니다.')
+  }
+}
+
+// 반려동물 삭제
+const deletePet = async (pet) => {
+  if (!confirm('정말 삭제하시겠습니까?')) return
+
+  try {
+    const response = await axios.delete(`/v1/users/${authStore.user.userId}/pets/${pet.id}`)
+    if (response.data.status === 'SUCCESS') {
+      toast.success('반려동물이 삭제되었습니다.')
+      await loadPets()
+    }
+  } catch (error) {
+    console.error('반려동물 삭제 실패:', error)
+    toast.error('반려동물 삭제에 실패했습니다.')
+  }
+}
+
+// 수정 모달 열기
+const editPet = (pet) => {
+  editingPet.value = pet
+  petForm.value = {
+    name: pet.name,
+    age: pet.age,
+    imageUrl: pet.imageUrl,
+    petsize: pet.petsize,
+    petGroupTypeId: pet.petGroupTypeId
+  }
+  showAddPetModal.value = true
+}
+
+// 모달 닫기
+const closeModal = () => {
+  showAddPetModal.value = false
+  editingPet.value = null
+  petForm.value = {
+    name: '',
+    age: '',
+    imageUrl: '',
+    petsize: null,
+    petGroupTypeId: null
+  }
+}
 
 // 전화번호 형식 자동 변환 (010-0000-0000)
 const formatPhoneNumber = (event) => {
@@ -892,6 +1122,90 @@ input:focus {
 @media (max-width: 480px) {
   .time-grid {
     grid-template-columns: repeat(3, minmax(70px, 1fr));
+  }
+}
+
+.pets-list {
+  display: grid;
+  gap: 20px;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+}
+
+.pet-card {
+  background: var(--white);
+  border-radius: 8px;
+  padding: 16px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+.pet-image {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.pet-info {
+  flex: 1;
+}
+
+.pet-info h3 {
+  margin: 0 0 4px 0;
+}
+
+.pet-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.btn-icon {
+  padding: 8px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--gray);
+}
+
+.btn-icon:hover {
+  color: var(--black);
+}
+
+.btn-icon.delete:hover {
+  color: var(--error);
+}
+
+.pet-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.image-upload {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.preview-image {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.button-group {
+  display: flex;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+@media (max-width: 768px) {
+  .pets-list {
+    grid-template-columns: 1fr;
   }
 }
 </style>
