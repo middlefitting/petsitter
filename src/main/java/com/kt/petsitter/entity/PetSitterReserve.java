@@ -2,6 +2,7 @@ package com.kt.petsitter.entity;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -46,4 +47,24 @@ public class PetSitterReserve extends BaseEntity {
 
     @OneToMany(mappedBy = "reserve")
     private List<PetSitterOrder> petSitterOrders = new ArrayList<>();
+
+    @Builder
+    public PetSitterReserve(LocalDateTime beginTime, LocalDateTime endTime, Boolean isaccept, Boolean ispaied, Pet pet,
+        String petage, String petimageurl, String petname, PetService petService, PetSitter petSitter,
+        List<PetSitterOrder> petSitterOrders, Long price, String review, User user) {
+        this.beginTime = beginTime;
+        this.endTime = endTime;
+        this.isaccept = isaccept;
+        this.ispaied = ispaied;
+        this.pet = pet;
+        this.petage = petage;
+        this.petimageurl = petimageurl;
+        this.petname = petname;
+        this.petService = petService;
+        this.petSitter = petSitter;
+        this.petSitterOrders = petSitterOrders;
+        this.price = price;
+        this.review = review;
+        this.user = user;
+    }
 }
