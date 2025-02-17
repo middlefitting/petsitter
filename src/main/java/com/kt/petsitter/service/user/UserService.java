@@ -2,17 +2,24 @@ package com.kt.petsitter.service.user;
 
 import static com.kt.petsitter.global.constant.GlobalString.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.kt.petsitter.dto.user.EmailLoginUserDto;
 import com.kt.petsitter.dto.user.PasswordChangeUserDto;
+import com.kt.petsitter.entity.RoleGroup;
 import com.kt.petsitter.entity.User;
+import com.kt.petsitter.entity.UserRoleGroup;
 import com.kt.petsitter.global.exception.ForbiddenException;
 import com.kt.petsitter.global.exception.IllegalException;
 import com.kt.petsitter.dto.user.CreateUserDto;
 import com.kt.petsitter.dto.user.UpdateUserInfoDto;
 import com.kt.petsitter.dto.user.WithdrawUserDto;
+import com.kt.petsitter.repository.role.RoleGroupRepository;
+import com.kt.petsitter.repository.role.UserRoleGroupRepository;
 import com.kt.petsitter.repository.user.UserRepository;
 
 import jakarta.servlet.http.HttpSession;
@@ -34,10 +41,19 @@ public class UserService {
 
 
 	private final UserRepository userRepository;
+	private final UserRoleGroupRepository userRoleGroupRepository;
+	private final RoleGroupRepository roleGroupRepository;
 
+	@Transactional
 	public CreateUserDto createUser(CreateUserDto reqUserDto) {
 		User user = CreateUserDto.MapStruct.INSTANCE.toEntity(reqUserDto);
 		userRepository.save(user);
+
+		//일반유저 권한 추가
+		RoleGroup roleGroup = roleGroupRepository.findByGroupname("user").orElseThrow(RuntimeException::new);
+		UserRoleGroup userRoleGroup = UserRoleGroup.builder().roleGroup(roleGroup).user(user).build();
+		userRoleGroupRepository.save(userRoleGroup);
+
 		return CreateUserDto.MapStruct.INSTANCE.toDto(user);
 	}
 
@@ -48,8 +64,12 @@ public class UserService {
 
 		EmailLoginUserDto emailLoginUserDto = EmailLoginUserDto.MapStruct.INSTANCE.toDto(user);
 
-		//TODO: 권한기능 추가 이후 DTO에 권한관련 데이터 추가
-
+		List<UserRoleGroup> roleGroups = userRoleGroupRepository.findAllByUserId(user.getId());
+		List<EmailLoginUserDto.RoleGroupRes> roleGroupRes = new ArrayList<>();
+		for (UserRoleGroup userRoleGroup : roleGroups) {
+			roleGroupRes.add(new EmailLoginUserDto.RoleGroupRes(userRoleGroup.getRoleGroup().getId(), userRoleGroup.getRoleGroup().getGroupname()));
+		}
+		emailLoginUserDto.setRoleGroups(roleGroupRes);
 		//TODO: JWT로 전환 및 암호화 고려
 		httpSession.setAttribute(USER_SESSION, emailLoginUserDto);
 

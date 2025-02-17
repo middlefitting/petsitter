@@ -34,7 +34,7 @@ import lombok.NoArgsConstructor;
 @Table(name="users")
 public class User extends BaseEntity {
 	@Id
-	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "USER_SEQ_GENERATOR")
+	@GeneratedValue(strategy = GenerationType.IDENTITY, generator = "USER_SEQ_GENERATOR")
 	@Column(name = "id", updatable = false, unique = true, columnDefinition = "INT")
 	private Long id;
 

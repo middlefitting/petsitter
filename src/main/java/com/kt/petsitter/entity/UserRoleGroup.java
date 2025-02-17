@@ -2,6 +2,7 @@ package com.kt.petsitter.entity;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -21,4 +22,10 @@ public class UserRoleGroup extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "rolegroup_id")
     private RoleGroup roleGroup;
+
+    @Builder
+    public UserRoleGroup(RoleGroup roleGroup, User user) {
+        this.roleGroup = roleGroup;
+        this.user = user;
+    }
 }

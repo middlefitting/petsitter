@@ -1,5 +1,8 @@
 package com.kt.petsitter.dto.user;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.factory.Mappers;
@@ -8,11 +11,11 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.kt.petsitter.entity.User;
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
 import lombok.AccessLevel;
+import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 /**
  * CreateUserDto.
@@ -28,6 +31,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PACKAGE)
 @Getter
 @JsonInclude(JsonInclude.Include.NON_NULL)
+@Setter
 public class EmailLoginUserDto {
 
 	@JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
@@ -45,19 +49,25 @@ public class EmailLoginUserDto {
 	private String phone;
 
 	@JsonProperty(access = JsonProperty.Access.READ_ONLY)
-	private String roleGroupId;
+	private List<RoleGroupRes> roleGroups = new ArrayList<>();
 
-	@JsonProperty(access = JsonProperty.Access.READ_ONLY)
-	private String roleGroupName;
+	@Data
+	public static class RoleGroupRes {
+		Long roleGroupId;
+		String roleGroupName;
 
-	public EmailLoginUserDto(String email, String name, String password, String phone, String roleGroupId,
-		String roleGroupName, Long userId) {
+		public RoleGroupRes(Long id, String groupname) {
+			this.roleGroupId = id;
+			this.roleGroupName = groupname;
+		}
+	}
+
+	public EmailLoginUserDto(String email, String name, String password, String phone, List<RoleGroupRes> roleGroups, Long userId) {
 		this.email = email;
 		this.name = name;
 		this.password = password;
 		this.phone = phone;
-		this.roleGroupId = roleGroupId;
-		this.roleGroupName = roleGroupName;
+		this.roleGroups = roleGroups;
 		this.userId = userId;
 	}
 

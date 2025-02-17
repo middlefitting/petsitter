@@ -87,8 +87,7 @@ const handleSubmit = async () => {
         authStore.login({
           userId: userData.userId,
           email: userData.email,
-          roleGroupId: userData.roleGroupId,
-          roleGroupName: userData.roleGroupName,
+          roleGroups: userData.roleGroups,
           name: userData.name,
           phone: userData.phone
         })

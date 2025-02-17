@@ -9,40 +9,41 @@
           <div class="input-group">
             <select v-model="filters.location" class="form-select">
               <option value="">지역 선택</option>
-              <option value="서울">서울</option>
-              <option value="경기">경기</option>
+              <option v-for="address in addresses" :key="address.id" :value="address.city">
+                {{ address.city }}
+              </option>
             </select>
           </div>
           <div class="input-group">
-            <select v-model="filters.petType" class="form-select">
+            <select v-model="filters.petGroup" class="form-select" @change="handlePetGroupChange">
+              <option value="">동물 종류 선택</option>
+              <option v-for="group in petGroups" :key="group.id" :value="group.id">
+                {{ group.groupname }}
+              </option>
+            </select>
+          </div>
+          <div class="input-group">
+            <select v-model="filters.petType" class="form-select" :disabled="!filters.petGroup">
               <option value="">품종 선택</option>
-              <optgroup label="강아지">
-                <option value="푸들">푸들</option>
-                <option value="말티즈">말티즈</option>
-                <option value="치와와">치와와</option>
-                <option value="도베르만">도베르만</option>
-              </optgroup>
-              <optgroup label="고양이">
-                <option value="페르시안">페르시안</option>
-                <option value="러시안블루">러시안블루</option>
-                <option value="샴">샴</option>
-              </optgroup>
+              <option v-for="type in currentPetTypes" :key="type.id" :value="type.id">
+                {{ type.typename }}
+              </option>
             </select>
           </div>
           <div class="input-group">
             <select v-model="filters.service" class="form-select">
               <option value="">서비스 선택</option>
-              <option value="산책">산책</option>
-              <option value="돌봄">돌봄</option>
-              <option value="훈련">훈련</option>
+              <option v-for="service in petServices" :key="service.petServiceId" :value="service.petServiceId">
+                {{ service.servicename }}
+              </option>
             </select>
           </div>
-          <div class="input-group">
+          <!-- <div class="input-group">
             <select v-model="filters.sort" class="form-select">
               <option value="price">가격순</option>
               <option value="rating">평점순</option>
             </select>
-          </div>
+          </div> -->
         </div>
       </div>
 
@@ -53,7 +54,7 @@
 
       <!-- 펫시터 목록 -->
       <div v-else class="petsitter-list">
-        <div v-for="sitter in displayedPetsitters" :key="sitter.id" class="petsitter-card card">
+        <div v-for="sitter in filteredPetsitters" :key="sitter.id" class="petsitter-card card">
           <div class="sitter-info">
             <h2>{{ sitter.name }}</h2>
             <p class="location">{{ sitter.location }}</p>
@@ -95,14 +96,68 @@ import { toast } from 'vue3-toastify'
 
 const router = useRouter()
 const petsitters = ref([])
+const addresses = ref([])
+const petGroups = ref([])
+const currentPetTypes = ref([])
+const petServices = ref([])
 const isLoading = ref(false)
 
 const filters = ref({
   location: '',
+  petGroup: '',
   petType: '',
   service: '',
-  sort: 'price'
 })
+
+// 데이터 로드 함수들
+const loadAddresses = async () => {
+  try {
+    const response = await axios.get('/v1/addresses')
+    addresses.value = response.data.data
+  } catch (error) {
+    console.error('주소 목록 로드 에러:', error)
+    toast.error('주소 목록을 불러오는데 실패했습니다.')
+  }
+}
+
+const loadPetGroups = async () => {
+  try {
+    const response = await axios.get('/v1/pet-groups')
+    petGroups.value = response.data.data
+  } catch (error) {
+    console.error('펫 그룹 로드 에러:', error)
+    toast.error('펫 그룹을 불러오는데 실패했습니다.')
+  }
+}
+
+const loadPetGroupTypes = async (groupId) => {
+  try {
+    const response = await axios.get(`/v1/pet-groups/${groupId}/pet-group-types`)
+    currentPetTypes.value = response.data.data
+  } catch (error) {
+    console.error('펫 타입 로드 에러:', error)
+    toast.error('펫 타입을 불러오는데 실패했습니다.')
+  }
+}
+
+const handlePetGroupChange = async () => {
+  filters.value.petType = ''
+  if (filters.value.petGroup) {
+    await loadPetGroupTypes(filters.value.petGroup)
+  } else {
+    currentPetTypes.value = []
+  }
+}
+
+const loadPetServices = async () => {
+  try {
+    const response = await axios.get('/v1/pet-services')
+    petServices.value = response.data.data
+  } catch (error) {
+    console.error('펫 서비스 로드 에러:', error)
+    toast.error('펫 서비스를 불러오는데 실패했습니다.')
+  }
+}
 
 // 펫시터 목록 로드
 async function loadPetSitters() {
@@ -122,23 +177,48 @@ async function loadPetSitters() {
 const filteredPetsitters = computed(() => {
   return petsitters.value.filter(sitter => {
     // 지역 필터
-    if (filters.value.location && sitter.location !== filters.value.location) return false
+    if (filters.value.location && sitter.location !== filters.value.location) {
+      return false
+    }
 
     // 품종 필터
-    if (filters.value.petType && !sitter.petTypes.includes(filters.value.petType)) return false
+    if (filters.value.petType) {
+      const hasPetType = sitter.petTypes.some(type =>
+        type.groupName === getPetGroupName(filters.value.petGroup) &&
+        type.typeName === getPetTypeName(filters.value.petType)
+      )
+      if (!hasPetType) return false
+    }
 
     // 서비스 필터
-    if (filters.value.service && !sitter.services.some(s => s.type === filters.value.service)) return false
+    if (filters.value.service) {
+      const hasService = sitter.services.some(service =>
+        service.type === getPetServiceName(filters.value.service)
+      )
+      if (!hasService) return false
+    }
 
     return true
-  }).sort((a, b) => {
-    // 정렬
-    if (filters.value.sort === 'price') {
-      return a.services[0]?.price - b.services[0]?.price
-    }
-    return 0 // 기본 정렬
   })
 })
+
+// 그룹 ID로 그룹 이름 가져오기
+const getPetGroupName = (groupId) => {
+  const group = petGroups.value.find(g => g.id === groupId)
+  return group ? group.groupname : ''
+}
+
+// 타입 ID로 타입 이름 가져오기
+const getPetTypeName = (typeId) => {
+  const type = currentPetTypes.value.find(t => t.id === typeId)
+  return type ? type.typename : ''
+}
+
+// 서비스 ID로 서비스 이름 가져오기
+const getPetServiceName = (serviceId) => {
+  const service = petServices.value.find(s => s.petServiceId === serviceId)
+  return service ? service.servicename : ''
+}
 
 const ITEMS_PER_PAGE = 5
 const currentPage = ref(1)
@@ -163,8 +243,21 @@ const viewDetails = (sitterId) => {
 }
 
 // 컴포넌트 마운트 시 데이터 로드
-onMounted(() => {
-  loadPetSitters()
+onMounted(async () => {
+  isLoading.value = true
+  try {
+    await Promise.all([
+      loadAddresses(),
+      loadPetGroups(),
+      loadPetServices(),
+      loadPetSitters()
+    ])
+  } catch (error) {
+    console.error('데이터 로드 에러:', error)
+    toast.error('데이터를 불러오는데 실패했습니다.')
+  } finally {
+    isLoading.value = false
+  }
 })
 </script>
 

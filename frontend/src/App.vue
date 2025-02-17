@@ -6,12 +6,15 @@ export default {
   setup() {
     const authStore = useAuthStore();
     const isLoggedIn = computed(() => authStore.isAuthenticated);
+    const isAdmin = computed(() => {
+      return authStore.user?.roleGroups?.some(role => role.roleGroupName === 'admin') || false;
+    });
 
     const logout = () => {
       authStore.logout();
     };
 
-    return { isLoggedIn, logout };
+    return { isLoggedIn, isAdmin, logout };
   }
 };
 </script>
@@ -24,6 +27,7 @@ export default {
         <router-link to="/" class="logo">🐶</router-link>
         <!-- <router-link to="/shop" active-class="active">쇼핑몰</router-link> -->
         <router-link to="/petsitters" active-class="active">펫시터</router-link>
+        <router-link v-if="isAdmin" to="/admin" active-class="active" class="admin-link">관리자</router-link>
       </div>
       <div class="nav-right">
         <template v-if="isLoggedIn">
@@ -110,5 +114,14 @@ footer {
 
 .github-icon:hover {
   transform: scale(1.1);
+}
+
+.admin-link {
+  color: #ff4757 !important; /* 관리자 메뉴 강조 */
+  font-weight: 500;
+}
+
+.admin-link:hover {
+  color: #ff6b81 !important;
 }
 </style>
