@@ -67,6 +67,12 @@ const routes = [
     name: 'PetSitterReservation',
     component: () => import('../views/PetSitterReservation.vue'),
     meta: { requiresAuth: true }
+  },
+  {
+    path: '/reservations',
+    name: 'Reservations',
+    component: () => import('@/views/Reservations.vue'),
+    meta: { requiresAuth: true }
   }
 ];
 

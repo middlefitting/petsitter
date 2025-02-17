@@ -1,27 +1,33 @@
 <template>
   <main>
-    <div class="container">
+    <div class="container my-40">
+      <h1 class="text-center mb-20">마이페이지</h1>
+
+      <!-- 탭 메뉴 -->
       <div class="tabs mb-20">
         <button
-          class="tab-btn"
-          :class="{ active: activeTab === 'profile' }"
+          :class="['tab-button', { active: activeTab === 'profile' }]"
           @click="activeTab = 'profile'"
         >
-          회원정보 관리
+          프로필
         </button>
         <button
-          class="tab-btn"
-          :class="{ active: activeTab === 'pets' }"
+          :class="['tab-button', { active: activeTab === 'pets' }]"
           @click="activeTab = 'pets'"
         >
-          반려동물 관리
+          반려동물
         </button>
         <button
-          class="tab-btn"
-          :class="{ active: activeTab === 'petsitter' }"
+          :class="['tab-button', { active: activeTab === 'petsitter' }]"
           @click="activeTab = 'petsitter'"
         >
-          펫시터 등록
+          펫시터 정보
+        </button>
+        <button
+          :class="['tab-button', { active: activeTab === 'reservations' }]"
+          @click="goToReservations"
+        >
+          예약관리
         </button>
       </div>
 
@@ -221,7 +227,7 @@
       </div>
 
       <!-- 펫시터 등록 탭 -->
-      <div v-else class="form-container">
+      <div v-else-if="activeTab === 'petsitter'" class="form-container">
         <h2 class="text-center mb-20">펫시터 정보 등록</h2>
         <form @submit.prevent="registerPetSitter">
           <div class="form-group">
@@ -935,6 +941,10 @@ const handleSizeSelect = (sizeId) => {
     selectedPetSizes.value.splice(index, 1)
   }
 }
+
+const goToReservations = () => {
+  router.push('/reservations')
+}
 </script>
 
 <style scoped>
@@ -957,21 +967,27 @@ main {
   display: flex;
   justify-content: center;
   gap: 20px;
+  margin-bottom: 30px;
 }
 
-.tab-btn {
+.tab-button {
   padding: 10px 20px;
-  border: 2px solid var(--black);
+  border: none;
   background: none;
-  color: var(--black);
-  border-radius: 4px;
+  color: var(--gray);
   cursor: pointer;
+  font-size: 16px;
+  border-bottom: 2px solid transparent;
   transition: all 0.3s ease;
 }
 
-.tab-btn.active {
-  background: var(--black);
-  color: var(--white);
+.tab-button:hover {
+  color: var(--black);
+}
+
+.tab-button.active {
+  color: var(--black);
+  border-bottom-color: var(--black);
 }
 
 .form-container {
@@ -1211,12 +1227,12 @@ input:focus {
 
 @media (max-width: 768px) {
   .tabs {
-    flex-direction: column;
-    align-items: center;
+    gap: 10px;
   }
 
-  .tab-btn {
-    width: 200px;
+  .tab-button {
+    padding: 8px 16px;
+    font-size: 14px;
   }
 
   .select-group {

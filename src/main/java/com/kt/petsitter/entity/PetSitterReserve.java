@@ -67,4 +67,8 @@ public class PetSitterReserve extends BaseEntity {
         this.review = review;
         this.user = user;
     }
+
+    public void updateStatus(Boolean status) {
+        this.isaccept = status;
+    }
 }

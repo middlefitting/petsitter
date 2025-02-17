@@ -60,4 +60,31 @@ public class ReservationService {
                 .map(ReservationResponse::from)
                 .toList();
     }
+
+    public List<ReservationResponse> getPetSitterReservations(Long userId) {
+        PetSitter petSitter = petSitterRepository.findByUserId(userId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 사용자의 펫시터 정보를 찾을 수 없습니다."));
+
+        return reservationRepository.findByPetSitterId(petSitter.getId()).stream()
+                .map(ReservationResponse::from)
+                .toList();
+    }
+
+    @Transactional
+    public ReservationResponse acceptReservation(Long reservationId) {
+        PetSitterReserve reserve = reservationRepository.findById(reservationId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 예약입니다."));
+
+        reserve.updateStatus(true); // 예약 상태를 승인으로 변경
+        return ReservationResponse.from(reserve);
+    }
+
+    @Transactional
+    public ReservationResponse rejectReservation(Long reservationId) {
+        PetSitterReserve reserve = reservationRepository.findById(reservationId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 예약입니다."));
+
+        reservationRepository.delete(reserve); // 예약 거절 시 삭제
+        return ReservationResponse.from(reserve);
+    }
 }

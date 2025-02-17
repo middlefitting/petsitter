@@ -1,5 +1,7 @@
 package com.kt.petsitter.dto.reservation.response;
 
+import java.time.LocalDate;
+
 import com.kt.petsitter.entity.PetSitterReserve;
 import lombok.Builder;
 import lombok.Getter;
@@ -11,11 +13,11 @@ public class ReservationResponse {
     private String petName;
     private String petsitterName;
     private String serviceType;
-    private String date;
+    private LocalDate date;
     private String startTime;
     private String endTime;
     private Long totalPrice;
-    private String status;
+    private Boolean status;
 
     public static ReservationResponse from(PetSitterReserve reserve) {
         return ReservationResponse.builder()
@@ -23,11 +25,11 @@ public class ReservationResponse {
                 .petName(reserve.getPet().getName())
                 .petsitterName(reserve.getPetSitter().getName())
                 .serviceType(reserve.getPetService().getServicename())
-                // .date(reserve.getDate())
-                // .startTime(reserve.getStartTime())
-                // .endTime(reserve.getEndTime())
-                // .totalPrice(reserve.getTotalPrice())
-                // .status(reserve.getStatus())
+                .date(LocalDate.from(reserve.getBeginTime()))
+                .startTime(String.valueOf(reserve.getBeginTime()))
+                .endTime(String.valueOf(reserve.getEndTime()))
+                .totalPrice(reserve.getPrice())
+                .status(reserve.getIsaccept())
                 .build();
     }
 }

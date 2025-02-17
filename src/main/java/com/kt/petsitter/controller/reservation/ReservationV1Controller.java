@@ -30,4 +30,25 @@ public class ReservationV1Controller {
         List<ReservationResponse> reservations = reservationService.getUserReservations(userId);
         return ResponseEntity.ok(RestResponse.success(reservations, "예약 목록 조회 성공"));
     }
+
+    @GetMapping("/petsitter/users/{userId}")
+    public ResponseEntity<RestResponse<List<ReservationResponse>>> getPetSitterReservations(
+            @PathVariable Long userId) {
+        List<ReservationResponse> reservations = reservationService.getPetSitterReservations(userId);
+        return ResponseEntity.ok(RestResponse.success(reservations, "펫시터 예약 목록 조회 성공"));
+    }
+
+    @PostMapping("/{reservationId}/accept")
+    public ResponseEntity<RestResponse<ReservationResponse>> acceptReservation(
+            @PathVariable Long reservationId) {
+        ReservationResponse response = reservationService.acceptReservation(reservationId);
+        return ResponseEntity.ok(RestResponse.success(response, "예약이 승인되었습니다."));
+    }
+
+    @PostMapping("/{reservationId}/reject")
+    public ResponseEntity<RestResponse<ReservationResponse>> rejectReservation(
+            @PathVariable Long reservationId) {
+        ReservationResponse response = reservationService.rejectReservation(reservationId);
+        return ResponseEntity.ok(RestResponse.success(response, "예약이 거절되었습니다."));
+    }
 }

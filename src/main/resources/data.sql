@@ -42,3 +42,68 @@ INSERT INTO petservice (petservice_id, servicename, created_date, modified_date,
 VALUES (2, '훈련', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, false);
 INSERT INTO petservice (petservice_id, servicename, created_date, modified_date, is_deleted)
 VALUES (3, '산책', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, false);
+
+
+-- 기존 데이터 삽입 전에 시퀀스 초기화
+ALTER SEQUENCE user_seq RESTART WITH 100;
+ALTER SEQUENCE petgroup_id_seq RESTART WITH 100;
+ALTER SEQUENCE petgrouptype_id_seq RESTART WITH 100;
+ALTER SEQUENCE petservice_petservice_id_seq RESTART WITH 100;
+ALTER SEQUENCE petsize_id_seq RESTART WITH 100;
+ALTER SEQUENCE petsitter_id_seq RESTART WITH 100;
+ALTER SEQUENCE petsitter_petservice_id_seq RESTART WITH 100;
+ALTER SEQUENCE petcaretime_id_seq RESTART WITH 100;
+
+-- User 데이터 추가
+INSERT INTO users (id, email, name, password, phone, isban, created_date, modified_date, is_deleted)
+VALUES (1, 'test@test.com', '홍길동', '11111111', '010-0000-0000', false, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, false);
+
+-- PetSitter 데이터 추가
+INSERT INTO petsitter (id, name, user_id, address_id, mobile, isaccept, created_date, modified_date, is_deleted)
+VALUES (1, '홍길동', 1, 1, '010-0000-0000', false, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, false);
+
+-- PetSitterPetService 데이터 추가
+INSERT INTO petsitter_petservice (id, petsitter_id, petservice_id, hprice, created_date, modified_date, is_deleted)
+VALUES (1, 1, 1, 10000, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, false);
+INSERT INTO petsitter_petservice (id, petsitter_id, petservice_id, hprice, created_date, modified_date, is_deleted)
+VALUES (2, 1, 2, 20000, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, false);
+
+-- PetSitterPetGroupType 데이터 추가
+INSERT INTO petsitter_petgrouptype (id, petsitter_id, petgrouptype_id, created_date, modified_date, is_deleted)
+VALUES (1, 1, 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, false);
+INSERT INTO petsitter_petgrouptype (id, petsitter_id, petgrouptype_id, created_date, modified_date, is_deleted)
+VALUES (2, 1, 3, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, false);
+
+-- PetSitterPetSize 데이터 추가
+INSERT INTO petsitter_petsize (id, petsitter_id, petsize_id, created_date, modified_date, is_deleted)
+VALUES (1, 1, 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, false);
+INSERT INTO petsitter_petsize (id, petsitter_id, petsize_id, created_date, modified_date, is_deleted)
+VALUES (2, 1, 2, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, false);
+INSERT INTO petsitter_petsize (id, petsitter_id, petsize_id, created_date, modified_date, is_deleted)
+VALUES (3, 1, 3, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, false);
+
+-- PetCareTime 데이터 추가
+INSERT INTO petcaretime (id, petsitter_id, weekday, cate_time, created_date, modified_date, is_deleted)
+VALUES (1, 1, 'MON', 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, false);
+INSERT INTO petcaretime (id, petsitter_id, weekday, cate_time, created_date, modified_date, is_deleted)
+VALUES (2, 1, 'MON', 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, false);
+INSERT INTO petcaretime (id, petsitter_id, weekday, cate_time, created_date, modified_date, is_deleted)
+VALUES (3, 1, 'MON', 2, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, false);
+INSERT INTO petcaretime (id, petsitter_id, weekday, cate_time, created_date, modified_date, is_deleted)
+VALUES (4, 1, 'MON', 3, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, false);
+INSERT INTO petcaretime (id, petsitter_id, weekday, cate_time, created_date, modified_date, is_deleted)
+VALUES (5, 1, 'WED', 6, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, false);
+INSERT INTO petcaretime (id, petsitter_id, weekday, cate_time, created_date, modified_date, is_deleted)
+VALUES (6, 1, 'WED', 7, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, false);
+INSERT INTO petcaretime (id, petsitter_id, weekday, cate_time, created_date, modified_date, is_deleted)
+VALUES (7, 1, 'WED', 8, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, false);
+INSERT INTO petcaretime (id, petsitter_id, weekday, cate_time, created_date, modified_date, is_deleted)
+VALUES (8, 1, 'WED', 9, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, false);
+
+-- Pet 데이터 추가
+INSERT INTO pet (id, name, user_id, petgrouptype_id, petsize, age, created_date, modified_date, is_deleted)
+VALUES (1, '냥이', 1, 1, 1, '20', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, false);
+
+-- PetSitterReserve 데이터 추가
+INSERT INTO petsitter_reserve (id, user_id, petsitter_id, pet_id, petservice_id, begin_time, end_time, price, isaccept, ispaied, created_date, modified_date, is_deleted)
+VALUES (1, 1, 1, 1, 1, '2025-02-19 06:00:00', '2025-02-19 08:00:00', 20000, false, false, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, false);

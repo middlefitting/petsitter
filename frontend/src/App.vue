@@ -27,7 +27,7 @@ export default {
       </div>
       <div class="nav-right">
         <template v-if="isLoggedIn">
-          <router-link to="/user-profile" active-class="active">회원정보</router-link>
+          <router-link to="/user-profile" active-class="active">마이페이지</router-link>
           <a href="#" @click.prevent="logout">로그아웃</a>
         </template>
         <template v-else>

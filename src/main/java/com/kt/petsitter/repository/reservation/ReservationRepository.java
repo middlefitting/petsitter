@@ -7,4 +7,5 @@ import java.util.List;
 
 public interface ReservationRepository extends JpaRepository<PetSitterReserve, Long> {
     List<PetSitterReserve> findByPetUserId(Long userId);
+    List<PetSitterReserve> findByPetSitterId(Long petsitterId);
 }
