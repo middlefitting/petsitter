@@ -1,3 +1,7 @@
+-- 기존 데이터 삽입 전에 시퀀스 초기화
+ALTER SEQUENCE petgroup_id_seq RESTART WITH 100;
+ALTER SEQUENCE petgrouptype_id_seq RESTART WITH 100;
+
 INSERT INTO address (id, city, created_date, modified_date, is_deleted)
 VALUES (1, '서울', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, false);
 INSERT INTO address (id, city, created_date, modified_date, is_deleted)

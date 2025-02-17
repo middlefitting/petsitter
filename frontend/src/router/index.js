@@ -8,6 +8,7 @@ import FindPassword from '../views/FindPassword.vue'; // 비밀번호 찾기 페
 import UserProfile from '../views/UserProfile.vue'; // 회원정보 페이지
 import PetSitterDetail from '../views/PetSitterDetail.vue'; // 펫시터 상세 페이지
 import PaymentTest from '../views/PaymentTest.vue';
+import CodeManage from '@/views/admin/CodeManage.vue'
 
 const routes = [
   {
@@ -54,6 +55,12 @@ const routes = [
     path: '/payment-test',
     name: 'PaymentTest',
     component: PaymentTest
+  },
+  {
+    path: '/admin/code-manage',
+    name: 'CodeManage',
+    component: CodeManage,
+    meta: { requiresAuth: true, requiresAdmin: true }
   }
 ];
 

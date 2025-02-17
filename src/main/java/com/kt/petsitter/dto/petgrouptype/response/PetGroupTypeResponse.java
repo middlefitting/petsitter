@@ -7,15 +7,15 @@ import lombok.Getter;
 @Getter
 @Builder
 public class PetGroupTypeResponse {
-    private Long breedId;
-    private String breedName;
-    private String code;
+    private Long id;
+    private String typename;
+    private Long petGroupId;
 
     public static PetGroupTypeResponse from(PetGroupType petGroupType) {
         return PetGroupTypeResponse.builder()
-            .breedId(petGroupType.getId())
-            .breedName(petGroupType.getTypename())
-            .code(petGroupType.getCode())
-            .build();
+                .id(petGroupType.getId())
+                .typename(petGroupType.getTypename())
+                .petGroupId(petGroupType.getPetGroup().getId())
+                .build();
     }
 }

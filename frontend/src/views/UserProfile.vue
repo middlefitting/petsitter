@@ -83,10 +83,11 @@
         <form @submit.prevent="registerPetSitter">
           <div class="form-group">
             <label>위치</label>
-            <select v-model="petsitterForm.location" class="form-select" required>
+            <select v-model="petsitterForm.addressId" class="form-select" required>
               <option value="">지역을 선택하세요</option>
-              <option value="서울">서울</option>
-              <option value="경기">경기</option>
+              <option v-for="address in addresses" :key="address.id" :value="address.id">
+                {{ address.city }}
+              </option>
             </select>
           </div>
 
@@ -94,44 +95,30 @@
             <label>돌봄 품종</label>
             <div class="pet-type-selectors">
               <div class="select-group">
-                <select v-model="selectedPetType" class="form-select">
+                <select v-model="selectedPetGroup" class="form-select" @change="loadPetGroupTypes">
                   <option value="">동물 종류 선택</option>
-                  <option value="강아지">강아지</option>
-                  <option value="고양이">고양이</option>
+                  <option v-for="group in petGroups" :key="group.id" :value="group">
+                    {{ group.groupname }}
+                  </option>
                 </select>
                 <select
-                  v-if="selectedPetType === '강아지'"
-                  v-model="selectedBreed"
+                  v-if="selectedPetGroup"
+                  v-model="selectedPetGroupType"
                   class="form-select"
                 >
                   <option value="">세부 품종 선택</option>
-                  <option value="도베르만">도베르만</option>
-                  <option value="진돗개">진돗개</option>
-                  <option value="말티즈">말티즈</option>
-                  <!-- 더 많은 품종 추가 가능 -->
+                  <option v-for="type in petGroupTypes" :key="type.id" :value="type">
+                    {{ type.typename }}
+                  </option>
                 </select>
-                <button
-                  type="button"
-                  class="btn-add"
-                  @click="addPetType"
-                >
+                <button type="button" class="btn-add" @click="addPetGroupType">
                   추가
                 </button>
               </div>
               <div class="selected-types">
-                <span
-                  v-for="(type, index) in petsitterForm.petTypes"
-                  :key="index"
-                  class="type-tag"
-                >
-                  {{ type.mainType }} - {{ type.breed }}
-                  <button
-                    type="button"
-                    class="btn-remove"
-                    @click="removePetType(index)"
-                  >
-                    ×
-                  </button>
+                <span v-for="(type, index) in petsitterForm.petGroupTypes" :key="index" class="type-tag">
+                  {{ type.groupName }} - {{ type.typeName }}
+                  <button type="button" class="btn-remove" @click="removePetGroupType(index)">×</button>
                 </span>
               </div>
             </div>
@@ -140,9 +127,13 @@
           <div class="form-group">
             <label>돌봄 크기</label>
             <div class="checkbox-group">
-              <label class="checkbox-label">
-                <input type="checkbox" v-model="petsitterForm.petSizes" value="소형">
-                소형(10kg 이하)
+              <label v-for="size in petSizes" :key="size.id" class="checkbox-label">
+                <input
+                  type="checkbox"
+                  :value="size.id"
+                  v-model="petsitterForm.petSizes"
+                >
+                {{ size.size_info }}
               </label>
             </div>
           </div>
@@ -153,38 +144,25 @@
               <div class="select-group">
                 <select v-model="selectedService" class="form-select">
                   <option value="">서비스 선택</option>
-                  <option value="산책">산책</option>
-                  <option value="돌봄">돌봄</option>
-                  <option value="훈련">훈련</option>
+                  <option v-for="service in petServices" :key="service.petservice_id" :value="service">
+                    {{ service.servicename }}
+                  </option>
                 </select>
                 <input
                   type="number"
                   v-model="servicePrice"
                   class="form-select"
                   placeholder="시급 (원)"
+                  min="0"
                 >
-                <button
-                  type="button"
-                  class="btn-add"
-                  @click="addService"
-                >
+                <button type="button" class="btn-add" @click="addService">
                   추가
                 </button>
               </div>
               <div class="selected-types">
-                <span
-                  v-for="(service, index) in petsitterForm.services"
-                  :key="index"
-                  class="type-tag"
-                >
-                  {{ service.type }} - {{ service.price.toLocaleString() }}원/시간
-                  <button
-                    type="button"
-                    class="btn-remove"
-                    @click="removeService(index)"
-                  >
-                    ×
-                  </button>
+                <span v-for="(service, index) in petsitterForm.petServices" :key="index" class="type-tag">
+                  {{ service.serviceName }} - {{ service.price.toLocaleString() }}원/시간
+                  <button type="button" class="btn-remove" @click="removeService(index)">×</button>
                 </span>
               </div>
             </div>
@@ -256,17 +234,18 @@ const passwords = ref({
 
 const activeTab = ref('profile')
 
-const selectedPetType = ref('')
-const selectedBreed = ref('')
+const selectedPetGroup = ref(null)
+const selectedPetGroupType = ref(null)
 
-const selectedService = ref('')
+const selectedService = ref(null)
 const servicePrice = ref('')
 
 const petsitterForm = ref({
-  location: '',
-  petTypes: [],
+  addressId: '',
+  userId: 1,
+  petGroupTypes: [],
   petSizes: [],
-  services: [],
+  petServices: [],
   workingHours: {
     mon: Array(24).fill(false),
     tue: Array(24).fill(false),
@@ -337,30 +316,49 @@ const handleDragSelect = (day, time) => {
   }
 }
 
-const addPetType = () => {
-  petsitterForm.value.petTypes.push({
-    mainType: selectedPetType.value,
-    breed: selectedBreed.value
-  })
-  selectedBreed.value = ''
-  selectedPetType.value = ''
+const addPetGroupType = () => {
+  if (!selectedPetGroup.value || !selectedPetGroupType.value) return
+
+  const newType = {
+    petGroupTypeId: selectedPetGroupType.value.id,
+    groupName: selectedPetGroup.value.groupname,
+    typeName: selectedPetGroupType.value.typename
+  }
+
+  if (petsitterForm.value.petGroupTypes.some(type => type.petGroupTypeId === newType.petGroupTypeId)) {
+    toast.warning('이미 선택된 품종입니다.')
+    return
+  }
+
+  petsitterForm.value.petGroupTypes.push(newType)
+  selectedPetGroupType.value = null
 }
 
-const removePetType = (index) => {
-  petsitterForm.value.petTypes.splice(index, 1)
+const removePetGroupType = (index) => {
+  petsitterForm.value.petGroupTypes.splice(index, 1)
 }
 
 const addService = () => {
-  petsitterForm.value.services.push({
-    type: selectedService.value,
-    price: Number(servicePrice.value)
-  })
-  selectedService.value = ''
+  if (!selectedService.value || !servicePrice.value) return
+
+  const newService = {
+    petServiceId: selectedService.value.petservice_id,
+    serviceName: selectedService.value.servicename,
+    price: parseInt(servicePrice.value)
+  }
+
+  if (petsitterForm.value.petServices.some(service => service.petServiceId === newService.petServiceId)) {
+    toast.warning('이미 선택된 서비스입니다.')
+    return
+  }
+
+  petsitterForm.value.petServices.push(newService)
+  selectedService.value = null
   servicePrice.value = ''
 }
 
 const removeService = (index) => {
-  petsitterForm.value.services.splice(index, 1)
+  petsitterForm.value.petServices.splice(index, 1)
 }
 
 const isTimeSelected = (day, time) => {
@@ -384,16 +382,43 @@ watch(() => authStore.user, (newValue) => {
   console.log('authStore.user 변경:', newValue)
 }, { immediate: true })
 
-onMounted(() => {
-  console.log('컴포넌트 마운트 시 authStore.user:', authStore.user)
-  console.log('authStore.user?.name:', authStore.user?.name)
-  console.log('authStore.user?.phone:', authStore.user?.phone)
+// 데이터 상태 추가
+const addresses = ref([])
+const petGroups = ref([])
+const petGroupTypes = ref([])
+const petSizes = ref([])
+const petServices = ref([])
 
-  if (authStore.user) {
-    userInfo.value = {
-      name: authStore.user.name || '',
-      phone: authStore.user.phone || ''
+// 초기 데이터 로드
+onMounted(async () => {
+  try {
+    // 기존 유저 정보 로드
+    if (authStore.user) {
+      userInfo.value = {
+        name: authStore.user.name || '',
+        phone: authStore.user.phone || ''
+      }
     }
+
+    // 펫시터 등록에 필요한 데이터 로드
+    const [addressesRes, groupsRes, sizesRes, servicesRes] = await Promise.all([
+      axios.get('/v1/addresses'),
+      axios.get('/v1/pet-groups'),
+      axios.get('/v1/pet-sizes'),
+      axios.get('/v1/pet-services')
+    ])
+
+    addresses.value = addressesRes.data.data
+    petGroups.value = groupsRes.data.data
+    petSizes.value = sizesRes.data.data
+    petServices.value = servicesRes.data.data
+
+    // 데이터 확인을 위한 로그
+    console.log('Loaded pet groups:', petGroups.value)
+    console.log('Loaded pet sizes:', petSizes.value)
+  } catch (error) {
+    console.error('데이터 로드 에러:', error)
+    toast.error('필요한 데이터를 불러오는데 실패했습니다.')
   }
 })
 
@@ -504,35 +529,45 @@ const handleWithdrawal = async () => {
 
 const registerPetSitter = async () => {
   try {
-    // 여기서만 유효성 검사 수행
-    if (!petsitterForm.value.location) {
-      toast.error('위치를 선택해주세요.')
-      return
-    }
-    if (petsitterForm.value.petTypes.length === 0) {
-      toast.error('돌봄 품종을 선택해주세요.')
-      return
-    }
-    if (petsitterForm.value.services.length === 0) {
-      toast.error('서비스를 선택해주세요.')
-      return
-    }
+    if (!validateForm()) return
 
-    // API 호출 로직
-    const response = await axios.post('/v1/petsitters', petsitterForm.value)
+    const response = await axios.post('/api/v1/petsitters', petsitterForm.value)
 
     if (response.data.status === 'SUCCESS') {
       toast.success('펫시터 정보가 등록되었습니다.')
-      // 등록 성공 후 초기화 또는 리다이렉트
       router.push('/petsitters')
     }
   } catch (error) {
     console.error('펫시터 등록 에러:', error)
-    if (error.response?.data?.message) {
-      toast.error(error.response.data.message)
-    } else {
-      toast.error('등록에 실패했습니다.')
-    }
+    toast.error(error.response?.data?.message || '등록에 실패했습니다.')
+  }
+}
+
+// 폼 유효성 검사
+function validateForm() {
+  if (!petsitterForm.value.petGroupTypes.length) {
+    toast.error('돌봄 품종을 선택해주세요.')
+    return false
+  }
+  if (!petsitterForm.value.petSizes.length) {
+    toast.error('돌봄 가능한 크기를 선택해주세요.')
+    return false
+  }
+  if (!petsitterForm.value.petServices.length) {
+    toast.error('제공할 서비스를 선택해주세요.')
+    return false
+  }
+  return true
+}
+
+// 품종 타입 로드
+async function loadPetGroupTypes() {
+  if (!selectedPetGroup.value) return
+  try {
+    const response = await axios.get(`/v1/pet-group-types?groupId=${selectedPetGroup.value.id}`)
+    petGroupTypes.value = response.data.data
+  } catch (error) {
+    toast.error('품종 정보를 불러오는데 실패했습니다.')
   }
 }
 </script>

@@ -2,6 +2,7 @@ package com.kt.petsitter.entity;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -29,4 +30,19 @@ public class PetGroupType extends BaseEntity {
 
     @OneToMany(mappedBy = "petGroupType")
     private List<PetSitterPetGroupType> petSitterPetGroupTypes = new ArrayList<>();
+
+    @Builder
+    public PetGroupType(String code, PetGroup petGroup, List<Pet> pets,
+        List<PetSitterPetGroupType> petSitterPetGroupTypes,
+        String typename) {
+        this.code = code;
+        this.petGroup = petGroup;
+        this.pets = pets;
+        this.petSitterPetGroupTypes = petSitterPetGroupTypes;
+        this.typename = typename;
+    }
+
+    public void update(String typename) {
+        this.typename = typename;
+    }
 }

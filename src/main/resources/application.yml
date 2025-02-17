@@ -34,6 +34,11 @@ spring:
           order_inserts: true
           order_updates: true
           batch_versioned_data: true
+    defer-datasource-initialization: true
+  sql:
+    init:
+      mode: always
+      data-locations: classpath:data.sql
 
 # Swagger
 springdoc:
