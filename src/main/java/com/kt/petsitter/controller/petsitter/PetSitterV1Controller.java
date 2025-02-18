@@ -37,4 +37,10 @@ public class PetSitterV1Controller {
         PetSitterResponse response = petSitterService.getPetSitter(id);
         return ResponseEntity.ok(RestResponse.success(response, "펫시터 상세 조회 성공"));
     }
+
+    @GetMapping("/me")
+    public ResponseEntity<RestResponse<PetSitterResponse>> getMyPetSitterInfo(@Login EmailLoginUserDto sessionUser) {
+        PetSitterResponse response = petSitterService.getPetSitterByUserId(sessionUser.getUserId());
+        return ResponseEntity.ok(RestResponse.success(response, "펫시터 정보 조회 성공"));
+    }
 }

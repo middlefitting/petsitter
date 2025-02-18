@@ -129,4 +129,11 @@ public class PetSitterService {
             .orElseThrow(() -> new IllegalArgumentException("해당 펫시터를 찾을 수 없습니다."));
         return PetSitterResponse.from(petSitter);
     }
+
+    public PetSitterResponse getPetSitterByUserId(Long userId) {
+        PetSitter petSitter = petSitterRepository.findByUserId(userId)
+            .orElse(null);
+
+        return petSitter != null ? PetSitterResponse.from(petSitter) : null;
+    }
 }

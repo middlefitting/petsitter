@@ -226,136 +226,204 @@
         </Modal>
       </div>
 
-      <!-- 펫시터 등록 탭 -->
+      <!-- 펫시터 정보 탭 -->
       <div v-else-if="activeTab === 'petsitter'" class="form-container">
-        <h2 class="text-center mb-20">펫시터 정보 등록</h2>
-        <form @submit.prevent="registerPetSitter">
-          <div class="form-group">
-            <label>위치</label>
-            <select v-model="petsitterForm.addressId" class="form-select" required>
-              <option value="">지역을 선택하세요</option>
-              <option v-for="address in addresses" :key="address.id" :value="address.id">
-                {{ address.city }}
-              </option>
-            </select>
-          </div>
+        <div v-if="petsitterInfo">
+          <!-- 기존 펫시터 정보 표시 -->
+          <h2 class="text-center mb-20">펫시터 정보</h2>
+          <div class="petsitter-info">
+            <div class="info-group">
+              <label>이름</label>
+              <div class="info-value">{{ petsitterInfo.name }}</div>
+            </div>
+            <div class="info-group">
+              <label>연락처</label>
+              <div class="info-value">{{ petsitterInfo.mobile }}</div>
+            </div>
+            <div class="info-group">
+              <label>지역</label>
+              <div class="info-value">{{ petsitterInfo.location }}</div>
+            </div>
 
-          <div class="form-group">
-            <label>돌봄 품종</label>
-            <div class="pet-type-selectors">
-              <div class="select-group">
-                <select v-model="selectedPetGroup" class="form-select" @change="loadPetGroupTypes">
-                  <option value="">동물 종류 선택</option>
-                  <option v-for="group in petGroups" :key="group.id" :value="group">
-                    {{ group.groupname }}
-                  </option>
-                </select>
-                <select
-                  v-if="selectedPetGroup"
-                  v-model="selectedPetGroupType"
-                  class="form-select"
-                >
-                  <option value="">세부 품종 선택</option>
-                  <option v-for="type in petGroupTypes" :key="type.id" :value="type">
-                    {{ type.typename }}
-                  </option>
-                </select>
-                <button type="button" class="btn-add" @click="addPetGroupType">
-                  추가
-                </button>
+            <!-- 서비스 정보 -->
+            <div class="info-group">
+              <label>제공 서비스</label>
+              <div class="service-list">
+                <div v-for="service in petsitterInfo.services" :key="service.serviceId" class="service-item">
+                  <span>{{ service.type }}</span>
+                  <span class="price">{{ service.price }}원/시간</span>
+                </div>
               </div>
-              <div class="selected-types">
-                <span v-for="(type, index) in petsitterForm.petGroupTypes" :key="index" class="type-tag">
+            </div>
+
+            <!-- 돌봄 가능한 동물 종류 -->
+            <div class="info-group">
+              <label>돌봄 가능한 동물</label>
+              <div class="pet-types">
+                <div v-for="type in petsitterInfo.petTypes" :key="type.typeName" class="pet-type-item">
                   {{ type.groupName }} - {{ type.typeName }}
-                  <button type="button" class="btn-remove" @click="removePetGroupType(index)">×</button>
-                </span>
+                </div>
+              </div>
+            </div>
+
+            <!-- 돌봄 가능한 크기 -->
+            <div class="info-group">
+              <label>돌봄 가능한 크기</label>
+              <div class="size-list">
+                <div v-for="size in petsitterInfo.petSizes" :key="size" class="size-item">
+                  {{ size }}
+                </div>
+              </div>
+            </div>
+
+            <!-- 근무 가능 시간 -->
+            <div class="info-group">
+              <label>근무 가능 시간</label>
+              <div class="working-hours">
+                <div v-for="(hours, day) in petsitterInfo.workingHours" :key="day" class="day-schedule">
+                  <span class="day">{{ getDayName(day) }}</span>
+                  <div class="hours">
+                    <span v-for="(isAvailable, hour) in hours" :key="hour"
+                          :class="['hour-block', { available: isAvailable }]">
+                      {{ hour }}
+                    </span>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
-
-          <div class="form-group">
-            <label>돌봄 크기</label>
-            <div class="checkbox-group">
-              <label v-for="size in petSizes" :key="size.id" class="checkbox-label">
-                <input
-                  type="checkbox"
-                  :value="size.id"
-                  v-model="petsitterForm.petSizes"
-                >
-                {{ size.sizeInfo }}
-              </label>
+        </div>
+        <div v-else>
+          <!-- 기존 펫시터 등록 폼 -->
+          <h2 class="text-center mb-20">펫시터 등록</h2>
+          <form @submit.prevent="registerPetSitter">
+            <div class="form-group">
+              <label>위치</label>
+              <select v-model="petsitterForm.addressId" class="form-select" required>
+                <option value="">지역을 선택하세요</option>
+                <option v-for="address in addresses" :key="address.id" :value="address.id">
+                  {{ address.city }}
+                </option>
+              </select>
             </div>
-          </div>
 
-          <div class="form-group">
-            <label>서비스 종류 및 요금</label>
-            <div class="service-selectors">
-              <div class="select-group">
-                <select v-model="selectedService" class="form-select">
-                  <option value="">서비스 선택</option>
-                  <option v-for="service in petServices" :key="service.petservice_id" :value="service">
-                    {{ service.servicename }}
-                  </option>
-                </select>
-                <input
-                  type="number"
-                  v-model="servicePrice"
-                  class="form-select"
-                  placeholder="시급 (원)"
-                  min="0"
-                >
-                <button type="button" class="btn-add" @click="addService">
-                  추가
-                </button>
-              </div>
-              <div class="selected-types">
-                <span v-for="(service, index) in petsitterForm.petServices" :key="index" class="type-tag">
-                  {{ service.serviceName }} - {{ service.price.toLocaleString() }}원/시간
-                  <button type="button" class="btn-remove" @click="removeService(index)">×</button>
-                </span>
-              </div>
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label>근무 가능 시간</label>
-            <div class="working-hours">
-              <div class="weekday-selector">
-                <button
-                  v-for="day in weekdays"
-                  :key="day.value"
-                  class="day-btn"
-                  :class="{ active: selectedDay === day.value }"
-                  @click.prevent="selectedDay = day.value"
-                  type="button"
-                >
-                  {{ day.label }}
-                </button>
-              </div>
-
-              <div class="time-grid"
-                @mousedown.prevent="startDragging"
-                @mouseup.prevent="stopDragging"
-                @mouseleave="stopDragging"
-              >
-                <button
-                  v-for="time in timeSlots"
-                  :key="time"
-                  class="time-btn"
-                  :class="{
-                    selected: isTimeSelected(selectedDay, time)
-                  }"
-                  @mouseenter="handleDragSelect(selectedDay, time)"
-                  type="button"
-                >
-                  {{ time }}
-                </button>
+            <div class="form-group">
+              <label>돌봄 품종</label>
+              <div class="pet-type-selectors">
+                <div class="select-group">
+                  <select v-model="selectedPetGroup" class="form-select" @change="loadPetGroupTypes">
+                    <option value="">동물 종류 선택</option>
+                    <option v-for="group in petGroups" :key="group.id" :value="group">
+                      {{ group.groupname }}
+                    </option>
+                  </select>
+                  <select
+                    v-if="selectedPetGroup"
+                    v-model="selectedPetGroupType"
+                    class="form-select"
+                  >
+                    <option value="">세부 품종 선택</option>
+                    <option v-for="type in petGroupTypes" :key="type.id" :value="type">
+                      {{ type.typename }}
+                    </option>
+                  </select>
+                  <button type="button" class="btn-add" @click="addPetGroupType">
+                    추가
+                  </button>
+                </div>
+                <div class="selected-types">
+                  <span v-for="(type, index) in petsitterForm.petGroupTypes" :key="index" class="type-tag">
+                    {{ type.groupName }} - {{ type.typeName }}
+                    <button type="button" class="btn-remove" @click="removePetGroupType(index)">×</button>
+                  </span>
+                </div>
               </div>
             </div>
-          </div>
 
-          <button type="submit" class="btn">등록하기</button>
-        </form>
+            <div class="form-group">
+              <label>돌봄 크기</label>
+              <div class="checkbox-group">
+                <label v-for="size in petSizes" :key="size.id" class="checkbox-label">
+                  <input
+                    type="checkbox"
+                    :value="size.id"
+                    v-model="petsitterForm.petSizes"
+                  >
+                  {{ size.sizeInfo }}
+                </label>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>서비스 종류 및 요금</label>
+              <div class="service-selectors">
+                <div class="select-group">
+                  <select v-model="selectedService" class="form-select">
+                    <option value="">서비스 선택</option>
+                    <option v-for="service in petServices" :key="service.petservice_id" :value="service">
+                      {{ service.servicename }}
+                    </option>
+                  </select>
+                  <input
+                    type="number"
+                    v-model="servicePrice"
+                    class="form-select"
+                    placeholder="시급 (원)"
+                    min="0"
+                  >
+                  <button type="button" class="btn-add" @click="addService">
+                    추가
+                  </button>
+                </div>
+                <div class="selected-types">
+                  <span v-for="(service, index) in petsitterForm.petServices" :key="index" class="type-tag">
+                    {{ service.serviceName }} - {{ service.price.toLocaleString() }}원/시간
+                    <button type="button" class="btn-remove" @click="removeService(index)">×</button>
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>근무 가능 시간</label>
+              <div class="working-hours">
+                <div class="weekday-selector">
+                  <button
+                    v-for="day in weekdays"
+                    :key="day.value"
+                    class="day-btn"
+                    :class="{ active: selectedDay === day.value }"
+                    @click.prevent="selectedDay = day.value"
+                    type="button"
+                  >
+                    {{ day.label }}
+                  </button>
+                </div>
+
+                <div class="time-grid"
+                  @mousedown.prevent="startDragging"
+                  @mouseup.prevent="stopDragging"
+                  @mouseleave="stopDragging"
+                >
+                  <button
+                    v-for="time in timeSlots"
+                    :key="time"
+                    class="time-btn"
+                    :class="{
+                      selected: isTimeSelected(selectedDay, time)
+                    }"
+                    @mouseenter="handleDragSelect(selectedDay, time)"
+                    type="button"
+                  >
+                    {{ time }}
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <button type="submit" class="btn">등록하기</button>
+          </form>
+        </div>
       </div>
     </div>
   </main>
@@ -945,6 +1013,34 @@ const handleSizeSelect = (sizeId) => {
 const goToReservations = () => {
   router.push('/reservations')
 }
+
+const petsitterInfo = ref(null)
+
+// 컴포넌트 마운트 시 펫시터 정보 조회
+onMounted(async () => {
+  try {
+    const response = await axios.get(`/v1/petsitters/me`)
+    if (response.data.status === 'SUCCESS') {
+      petsitterInfo.value = response.data.data
+    }
+  } catch (error) {
+    console.error('펫시터 정보 조회 실패:', error)
+  }
+})
+
+// 요일 변환 함수
+const getDayName = (day) => {
+  const dayNames = {
+    mon: '월요일',
+    tue: '화요일',
+    wed: '수요일',
+    thu: '목요일',
+    fri: '금요일',
+    sat: '토요일',
+    sun: '일요일'
+  }
+  return dayNames[day]
+}
 </script>
 
 <style scoped>
@@ -1377,5 +1473,80 @@ input:focus {
 .checkbox-label input[type="checkbox"] {
   width: auto;
   margin: 0;
+}
+
+.petsitter-info {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.info-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.info-group label {
+  font-weight: bold;
+  color: var(--gray-dark);
+}
+
+.info-value {
+  padding: 8px;
+  background-color: var(--bg-secondary);
+  border-radius: 4px;
+}
+
+.service-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px;
+  background-color: var(--bg-secondary);
+  border-radius: 4px;
+}
+
+.working-hours {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.day-schedule {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.day {
+  width: 80px;
+}
+
+.hours {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.hour-block {
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--gray-light);
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+.hour-block.available {
+  background-color: #4CAF50;
+  color: white;
+}
+
+.pet-type-item, .size-item {
+  padding: 8px;
+  background-color: var(--bg-secondary);
+  border-radius: 4px;
 }
 </style>
