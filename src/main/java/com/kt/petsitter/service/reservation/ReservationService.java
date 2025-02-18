@@ -10,6 +10,7 @@ import com.kt.petsitter.repository.pet.PetRepository;
 import com.kt.petsitter.repository.petservice.PetServiceRepository;
 import com.kt.petsitter.repository.petsitter.PetSitterRepository;
 import com.kt.petsitter.repository.petsitterorder.PetSitterOrderRepository;
+import com.kt.petsitter.repository.petsitterpetservice.PetSitterPetServiceRepository;
 import com.kt.petsitter.repository.reservation.ReservationRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -31,6 +32,7 @@ public class ReservationService {
     private final PayTypeRepository payTypeRepository;
     private final OrderRepository orderRepository;
     private final PetSitterOrderRepository petSitterOrderRepository;
+    private final PetSitterPetServiceRepository petSitterPetServiceRepository;
 
     @Transactional
     public ReservationResponse createReservation(CreateReservationRequest request) {
@@ -40,7 +42,7 @@ public class ReservationService {
         Pet pet = petRepository.findById(request.getPetId())
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 반려동물입니다."));
 
-        PetService service = petServiceRepository.findById(request.getServiceId())
+        PetSitterPetService service = petSitterPetServiceRepository.findById(request.getServiceId())
                 .orElseThrow(() -> new IllegalArgumentException("지원하지 않는 서비스입니다."));
 
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
@@ -50,7 +52,7 @@ public class ReservationService {
         PetSitterReserve reserve = PetSitterReserve.builder()
                 .petSitter(petSitter)
                 .pet(pet)
-                .petService(service)
+                .petService(service.getPetService())
                 .beginTime(beginTime)
                 .endTime(endTime)
                 .price(request.getTotalPrice())
