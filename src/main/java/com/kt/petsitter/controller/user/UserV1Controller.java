@@ -20,13 +20,13 @@ import com.kt.petsitter.dto.user.EmailLoginUserDto;
 import com.kt.petsitter.dto.user.PasswordChangeUserDto;
 import com.kt.petsitter.dto.user.UpdateUserInfoDto;
 import com.kt.petsitter.dto.user.WithdrawUserDto;
-import com.kt.petsitter.global.annotation.login.SessionLogin;
+import com.kt.petsitter.global.annotation.login.Login;
 import com.kt.petsitter.global.apiresponse.RestResponse;
 import com.kt.petsitter.service.user.UserService;
 
 import jakarta.servlet.http.HttpServletRequest;
-import lombok.RequiredArgsConstructor;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 
 /**
  * UserV1Controller.
@@ -69,26 +69,27 @@ public class UserV1Controller {
 	public ResponseEntity<RestResponse<UpdateUserInfoDto>> updateUser(
 		@PathVariable Long id,
 		@RequestBody UpdateUserInfoDto updateDto,
-		@SessionLogin EmailLoginUserDto login) {
+		@Login EmailLoginUserDto login) {
 
 		UpdateUserInfoDto result = userService.updateUserInfo(id, updateDto, login);
 		return new ResponseEntity<>(RestResponse.success(result, INFO_UD), HttpStatus.OK);
 	}
 
 	@DeleteMapping("/{id}")
-	public ResponseEntity<RestResponse<Void>> deleteUser(@PathVariable Long id, @SessionLogin EmailLoginUserDto login, @RequestBody WithdrawUserDto withdrawDto) {
-		userService.withdrawUser(id,  withdrawDto, login);
+	public ResponseEntity<RestResponse<Void>> deleteUser(@PathVariable Long id, @Login EmailLoginUserDto login,
+		@RequestBody WithdrawUserDto withdrawDto) {
+		userService.withdrawUser(id, withdrawDto, login);
 		return new ResponseEntity<>(RestResponse.success(null, USER_DEL), HttpStatus.OK);
 	}
 
 	@GetMapping("/{id}")
-	public ResponseEntity<RestResponse<Void>> getUserById(@PathVariable Long id) {
+	public ResponseEntity<RestResponse<Void>> getUserById(@PathVariable Long id, @Login EmailLoginUserDto sessionUser) {
 		return null;
 	}
 
 	@PatchMapping("/{id}/reset-password")
 	public ResponseEntity<RestResponse<Void>> resetPassword(@PathVariable Long id,
-		@RequestBody PasswordChangeUserDto passwordDto, @SessionLogin EmailLoginUserDto login) {
+		@RequestBody PasswordChangeUserDto passwordDto, @Login EmailLoginUserDto login) {
 		userService.changePassword(id, passwordDto, login);
 
 		return new ResponseEntity<>(RestResponse.success(null, PW_CG), HttpStatus.OK);

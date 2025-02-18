@@ -4,7 +4,7 @@ import com.kt.petsitter.dto.pet.request.CreatePetRequest;
 import com.kt.petsitter.dto.pet.request.UpdatePetRequest;
 import com.kt.petsitter.dto.pet.response.PetResponse;
 import com.kt.petsitter.dto.user.EmailLoginUserDto;
-import com.kt.petsitter.global.annotation.login.SessionLogin;
+import com.kt.petsitter.global.annotation.login.Login;
 import com.kt.petsitter.global.apiresponse.RestResponse;
 import com.kt.petsitter.service.pet.PetService;
 import lombok.RequiredArgsConstructor;
@@ -25,7 +25,7 @@ public class PetV1Controller {
         @PathVariable Long userId,
         @RequestPart("data") CreatePetRequest request,
         @RequestPart(value = "image", required = false) MultipartFile image,
-        @SessionLogin EmailLoginUserDto sessionUser
+        @Login EmailLoginUserDto sessionUser
     ) {
         PetResponse response = petService.createPet(userId, request, image, sessionUser);
         return ResponseEntity.ok(RestResponse.success(response, "반려동물 등록이 완료되었습니다."));
@@ -34,7 +34,7 @@ public class PetV1Controller {
     @GetMapping
     public ResponseEntity<RestResponse<List<PetResponse>>> getPets(
         @PathVariable Long userId,
-        @SessionLogin EmailLoginUserDto sessionUser
+        @Login EmailLoginUserDto sessionUser
     ) {
         List<PetResponse> responses = petService.getPetsByUserId(userId, sessionUser);
         return ResponseEntity.ok(RestResponse.success(responses, "반려동물 목록 조회 성공"));
@@ -46,7 +46,7 @@ public class PetV1Controller {
         @PathVariable Long petId,
         @RequestPart("data") UpdatePetRequest request,
         @RequestPart(value = "image", required = false) MultipartFile image,
-        @SessionLogin EmailLoginUserDto sessionUser
+        @Login EmailLoginUserDto sessionUser
     ) {
         PetResponse response = petService.updatePet(userId, petId, request, image, sessionUser);
         return ResponseEntity.ok(RestResponse.success(response, "반려동물 정보가 수정되었습니다."));
@@ -56,7 +56,7 @@ public class PetV1Controller {
     public ResponseEntity<RestResponse<Void>> deletePet(
         @PathVariable Long userId,
         @PathVariable Long petId,
-        @SessionLogin EmailLoginUserDto sessionUser
+        @Login EmailLoginUserDto sessionUser
     ) {
         petService.deletePet(userId, petId, sessionUser);
         return ResponseEntity.ok(RestResponse.success(null, "반려동물이 삭제되었습니다."));

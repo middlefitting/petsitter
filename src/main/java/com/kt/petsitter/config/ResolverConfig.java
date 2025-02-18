@@ -6,7 +6,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-import com.kt.petsitter.global.annotation.login.SessionLoginArgumentResolver;
+import com.kt.petsitter.global.annotation.login.AdminLoginArgumentResolver;
+import com.kt.petsitter.global.annotation.login.LoginArgumentResolver;
 
 /**
  * ResolverConfig.
@@ -23,7 +24,8 @@ import com.kt.petsitter.global.annotation.login.SessionLoginArgumentResolver;
 public class ResolverConfig implements WebMvcConfigurer {
 	@Override
 	public void addArgumentResolvers(List<HandlerMethodArgumentResolver> resolvers) {
-		// SessionLoginArgumentResolver 등록
-		resolvers.add(new SessionLoginArgumentResolver());
+		// LoginArgumentResolver 등록
+		resolvers.add(new LoginArgumentResolver());
+		resolvers.add(new AdminLoginArgumentResolver());
 	}
 }

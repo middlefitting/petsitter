@@ -40,6 +40,7 @@ spring:
       mode: always
       data-locations: classpath:data.sql
 
+
 # Swagger
 springdoc:
   api-docs:

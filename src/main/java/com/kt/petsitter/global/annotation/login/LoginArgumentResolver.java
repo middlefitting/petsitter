@@ -9,13 +9,14 @@ import org.springframework.web.method.support.ModelAndViewContainer;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.kt.petsitter.dto.user.EmailLoginUserDto;
+import com.kt.petsitter.global.exception.UnAuthException;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
-public class SessionLoginArgumentResolver implements HandlerMethodArgumentResolver {
+public class LoginArgumentResolver implements HandlerMethodArgumentResolver {
 
 	// 세션에 저장된 속성명. 예: "USER_SESSION"
 	private static final String USER_SESSION = "USER_SESSION";
@@ -26,7 +27,7 @@ public class SessionLoginArgumentResolver implements HandlerMethodArgumentResolv
 	 */
 	@Override
 	public boolean supportsParameter(MethodParameter parameter) {
-		boolean hasSessionLoginAnnotation = parameter.hasParameterAnnotation(SessionLogin.class);
+		boolean hasSessionLoginAnnotation = parameter.hasParameterAnnotation(Login.class);
 		boolean isUserDtoType = EmailLoginUserDto.class.isAssignableFrom(parameter.getParameterType());
 		return hasSessionLoginAnnotation && isUserDtoType;
 	}
@@ -48,11 +49,11 @@ public class SessionLoginArgumentResolver implements HandlerMethodArgumentResolv
 
 		// 세션 자체가 없거나, 세션에 USER_SESSION 키가 없으면 401 에러
 		if (session == null) {
-			throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "로그인 후 이용해 주세요.");
+			throw new UnAuthException();
 		}
 		Object userObj = session.getAttribute(USER_SESSION);
 		if (userObj == null) {
-			throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "로그인 후 이용해 주세요.");
+			throw new UnAuthException();
 		}
 
 		return userObj;
