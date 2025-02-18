@@ -9,6 +9,7 @@ import org.springframework.web.method.support.ModelAndViewContainer;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.kt.petsitter.dto.user.EmailLoginUserDto;
+import com.kt.petsitter.global.exception.ForbiddenException;
 import com.kt.petsitter.global.exception.UnAuthException;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -27,7 +28,7 @@ public class AdminLoginArgumentResolver implements HandlerMethodArgumentResolver
 	 */
 	@Override
 	public boolean supportsParameter(MethodParameter parameter) {
-		boolean hasSessionLoginAnnotation = parameter.hasParameterAnnotation(Login.class);
+		boolean hasSessionLoginAnnotation = parameter.hasParameterAnnotation(AdminLogin.class);
 		boolean isUserDtoType = EmailLoginUserDto.class.isAssignableFrom(parameter.getParameterType());
 		return hasSessionLoginAnnotation && isUserDtoType;
 	}
@@ -54,6 +55,19 @@ public class AdminLoginArgumentResolver implements HandlerMethodArgumentResolver
 		Object userObj = session.getAttribute(USER_SESSION);
 		if (userObj == null) {
 			throw new UnAuthException();
+		}
+
+		EmailLoginUserDto user = (EmailLoginUserDto) session.getAttribute(USER_SESSION);
+		if (user == null) {
+			throw new UnAuthException();
+		}
+
+		// 관리자 권한 체크
+		boolean isAdmin = user.getRoleGroups().stream()
+			.anyMatch(role -> "admin".equals(role.getRoleGroupName()));
+
+		if (!isAdmin) {
+			throw new ForbiddenException();
 		}
 
 		return userObj;
