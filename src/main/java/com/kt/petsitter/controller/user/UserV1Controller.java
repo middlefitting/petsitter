@@ -101,4 +101,12 @@ public class UserV1Controller {
 		session.invalidate();  // 세션 무효화
 		return ResponseEntity.ok(RestResponse.success(null, "로그아웃 되었습니다."));
 	}
+
+	@GetMapping("/check-login")
+	public ResponseEntity<RestResponse<EmailLoginUserDto>> checkLogin(@Login EmailLoginUserDto sessionUser) {
+		if (sessionUser == null) {
+			return ResponseEntity.ok(null);
+		}
+		return ResponseEntity.ok(RestResponse.success(sessionUser, "로그인 상태입니다."));
+	}
 }

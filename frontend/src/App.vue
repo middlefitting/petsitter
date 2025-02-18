@@ -1,22 +1,24 @@
-<script>
+<script setup>
 import { useAuthStore } from "@/store/auth";
-import { computed } from "vue";
+import { computed, onMounted } from "vue";
+import { useRouter } from 'vue-router';
 
-export default {
-  setup() {
-    const authStore = useAuthStore();
-    const isLoggedIn = computed(() => authStore.isAuthenticated);
-    const isAdmin = computed(() => {
-      return authStore.user?.roleGroups?.some(role => role.roleGroupName === 'admin') || false;
-    });
+const router = useRouter();
+const authStore = useAuthStore();
 
-    const logout = () => {
-      authStore.logout();
-    };
+const isLoggedIn = computed(() => authStore.isAuthenticated);
+const isAdmin = computed(() => {
+  return authStore.user?.roleGroups?.some(role => role.roleGroupName === 'admin') || false;
+});
 
-    return { isLoggedIn, isAdmin, logout };
-  }
+const logout = () => {
+  authStore.logout();
+  router.push('/');
 };
+
+onMounted(async () => {
+  await authStore.checkLoginStatus();
+});
 </script>
 
 <template>

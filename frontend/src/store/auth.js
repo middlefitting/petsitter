@@ -5,6 +5,7 @@ export const useAuthStore = defineStore("auth", {
   state: () => ({
     user: null,
     isAuthenticated: false,
+    isLoading: true,
   }),
   actions: {
     login(userData) {
@@ -20,6 +21,23 @@ export const useAuthStore = defineStore("auth", {
         this.isAuthenticated = false;
       } catch (error) {
         console.error('로그아웃 실패:', error);
+      }
+    },
+    async checkLoginStatus() {
+      try {
+        const response = await axios.get('/v1/users/check-login');
+        if (response.data.status === 'SUCCESS') {
+          this.login(response.data.data);
+        } else {
+          this.isAuthenticated = false;
+          this.user = null;
+        }
+      } catch (error) {
+        console.error('로그인 체크 실패:', error);
+        this.isAuthenticated = false;
+        this.user = null;
+      } finally {
+        this.isLoading = false;
       }
     },
     updateUserInfo(name, phone) {
