@@ -25,6 +25,7 @@ import com.kt.petsitter.global.apiresponse.RestResponse;
 import com.kt.petsitter.service.user.UserService;
 
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
@@ -93,5 +94,11 @@ public class UserV1Controller {
 		userService.changePassword(id, passwordDto, login);
 
 		return new ResponseEntity<>(RestResponse.success(null, PW_CG), HttpStatus.OK);
+	}
+
+	@PostMapping("/logout")
+	public ResponseEntity<RestResponse<Void>> logout(HttpSession session) {
+		session.invalidate();  // 세션 무효화
+		return ResponseEntity.ok(RestResponse.success(null, "로그아웃 되었습니다."));
 	}
 }
