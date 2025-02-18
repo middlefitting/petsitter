@@ -58,7 +58,7 @@
     </div>
 
     <!-- 상위코드 추가/수정 모달 -->
-    <Modal v-if="showAddGroupModal" @close="showAddGroupModal = false">
+    <Modal v-if="showAddGroupModal" @close="closeGroupModal">
       <template #header>
         <h3>{{ editingGroup ? '코드 그룹 수정' : '코드 그룹 추가' }}</h3>
       </template>
@@ -74,14 +74,14 @@
           </div>
           <div class="button-group">
             <button type="submit" class="btn-primary">저장</button>
-            <button type="button" @click="showAddGroupModal = false">취소</button>
+            <button type="button" @click="closeGroupModal">취소</button>
           </div>
         </form>
       </template>
     </Modal>
 
     <!-- 하위코드 추가/수정 모달 -->
-    <Modal v-if="showAddTypeModal" @close="showAddTypeModal = false">
+    <Modal v-if="showAddTypeModal" @close="closeTypeModal">
       <template #header>
         <h3>{{ editingType ? '하위코드 수정' : '하위코드 추가' }}</h3>
       </template>
@@ -93,7 +93,7 @@
           </div>
           <div class="button-group">
             <button type="submit" class="btn-primary">저장</button>
-            <button type="button" @click="showAddTypeModal = false">취소</button>
+            <button type="button" @click="closeTypeModal">취소</button>
           </div>
         </form>
       </template>
@@ -254,6 +254,17 @@ function resetGroupForm() {
 function resetTypeForm() {
   typeForm.value = { typename: '' }
   editingType.value = null
+}
+
+// 모달 닫기 함수 추가
+function closeGroupModal() {
+  showAddGroupModal.value = false
+  resetGroupForm()
+}
+
+function closeTypeModal() {
+  showAddTypeModal.value = false
+  resetTypeForm()
 }
 </script>
 
