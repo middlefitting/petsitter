@@ -916,13 +916,22 @@ async function registerPetSitter() {
     }
 
     const response = await axios.post('/v1/petsitters', petSitterData)
-    if (response.data.success) {
+    if (response.data.status === 'SUCCESS') {
       toast.success('펫시터 등록이 완료되었습니다.')
-      router.push('/profile')
+
+      // 등록 성공 후 펫시터 정보 다시 조회
+      const myInfoResponse = await axios.get('/v1/petsitters/me')
+      if (myInfoResponse.data.status === 'SUCCESS') {
+        petsitterInfo.value = myInfoResponse.data.data
+      }
     }
   } catch (error) {
-    console.error('펫시터 등록 에러:', error)
-    toast.error('펫시터 등록에 실패했습니다.')
+    console.error('펫시터 등록 실패:', error)
+    if (error.response?.data?.message) {
+      toast.error(error.response.data.message)
+    } else {
+      toast.error('펫시터 등록에 실패했습니다.')
+    }
   }
 }
 
